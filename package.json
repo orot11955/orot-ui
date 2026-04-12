@@ -1,0 +1,54 @@
+{
+  "name": "orot-ui",
+  "version": "0.1.0",
+  "description": "Reusable UI component library inspired by Ant Design",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    },
+    "./dist/index.css": "./dist/index.css",
+    "./styles/global.css": "./src/styles/global.css",
+    "./themes/base.css": "./src/themes/base.css",
+    "./themes/light.css": "./src/themes/light.css",
+    "./themes/dark.css": "./src/themes/dark.css",
+    "./themes/sepia.css": "./src/themes/sepia.css",
+    "./themes/ocean.css": "./src/themes/ocean.css",
+    "./themes/forest.css": "./src/themes/forest.css"
+  },
+  "files": [
+    "dist",
+    "src/styles",
+    "src/themes"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "dev:docs": "pnpm --filter docs dev",
+    "build:docs": "pnpm --filter docs build"
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "react-dom": ">=18"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0",
+    "tsup": "^8.3.0",
+    "typescript": "^5.4.0"
+  },
+  "dependencies": {
+    "lucide-react": "^0.511.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  }
+}

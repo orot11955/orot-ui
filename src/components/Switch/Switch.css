@@ -1,0 +1,113 @@
+/* ── Switch ──────────────────────────────────────────── */
+.orot-switch {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  cursor: pointer;
+  background: var(--orot-color-border-strong);
+  border-radius: var(--orot-radius-full);
+  border: none;
+  padding: 0;
+  transition: background var(--orot-transition-base);
+  outline: none;
+  user-select: none;
+}
+
+.orot-switch:focus-visible {
+  outline: 2px solid var(--orot-color-border-focus);
+  outline-offset: 2px;
+}
+
+/* Sizes */
+.orot-switch--md {
+  width: 44px;
+  height: 22px;
+  min-width: 44px;
+}
+
+.orot-switch--sm {
+  width: 28px;
+  height: 16px;
+  min-width: 28px;
+}
+
+/* Checked */
+.orot-switch--checked {
+  background: var(--orot-color-primary);
+}
+
+/* Disabled */
+.orot-switch--disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ── Handle (thumb) ──────────────────────────────────── */
+.orot-switch__handle {
+  position: absolute;
+  background: var(--orot-color-bg);
+  border-radius: var(--orot-radius-full);
+  box-shadow: var(--orot-shadow-sm);
+  transition: left var(--orot-transition-base), right var(--orot-transition-base);
+}
+
+.orot-switch--md .orot-switch__handle {
+  width: 18px;
+  height: 18px;
+  left: 2px;
+  top: 2px;
+}
+
+.orot-switch--md.orot-switch--checked .orot-switch__handle {
+  left: calc(100% - 20px);
+}
+
+.orot-switch--sm .orot-switch__handle {
+  width: 12px;
+  height: 12px;
+  left: 2px;
+  top: 2px;
+}
+
+.orot-switch--sm.orot-switch--checked .orot-switch__handle {
+  left: calc(100% - 14px);
+}
+
+/* ── Loading spinner inside handle ───────────────────── */
+.orot-switch__spinner {
+  display: block;
+  width: 10px;
+  height: 10px;
+  margin: auto;
+  border: 1.5px solid var(--orot-color-border-strong);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: orot-switch-spin 0.55s linear infinite;
+  position: relative;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+@keyframes orot-switch-spin {
+  to { transform: translateY(-50%) rotate(360deg); }
+}
+
+/* ── Inner text ──────────────────────────────────────── */
+.orot-switch__inner {
+  font-size: 10px;
+  color: var(--orot-color-bg);
+  padding: 0 4px;
+  line-height: 1;
+  transition: opacity var(--orot-transition-fast);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.orot-switch--md .orot-switch__inner-checked  { padding-left: 8px; padding-right: 20px; }
+.orot-switch--md .orot-switch__inner-unchecked { padding-left: 20px; padding-right: 8px; }
+
+.orot-switch__inner-checked  { display: none; }
+.orot-switch__inner-unchecked { display: block; }
+
+.orot-switch--checked .orot-switch__inner-checked  { display: block; }
+.orot-switch--checked .orot-switch__inner-unchecked { display: none; }

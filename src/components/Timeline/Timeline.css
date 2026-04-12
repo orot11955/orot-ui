@@ -1,0 +1,118 @@
+.orot-timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Item ───────────────────────────────────── */
+.orot-timeline__item {
+  display: grid;
+  grid-template-columns: minmax(0, max-content) auto 1fr;
+  gap: 0 var(--orot-space-3);
+  position: relative;
+  padding-bottom: var(--orot-space-5);
+}
+
+.orot-timeline__item--has-label {
+  grid-template-columns: minmax(60px, max-content) auto 1fr;
+}
+
+.orot-timeline__item:last-child {
+  padding-bottom: 0;
+}
+
+/* ── Tail + Dot wrapper ─────────────────────── */
+.orot-timeline__tail-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 20px;
+}
+
+.orot-timeline__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--orot-radius-full);
+  border: 2px solid var(--orot-color-primary);
+  background: var(--orot-color-bg-container);
+  flex-shrink: 0;
+  z-index: 1;
+  margin-top: 4px;
+}
+
+.orot-timeline__dot--custom {
+  border: none;
+  background: transparent;
+  width: auto;
+  height: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.orot-timeline__tail {
+  flex: 1;
+  width: 2px;
+  background: var(--orot-color-border);
+  margin-top: 4px;
+}
+
+.orot-timeline__item:last-child .orot-timeline__tail {
+  display: none;
+}
+
+/* ── Label ─────────────────────────────────── */
+.orot-timeline__label {
+  text-align: right;
+  color: var(--orot-color-text-secondary);
+  font-size: var(--orot-font-size-sm);
+  padding-top: 4px;
+  overflow: hidden;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+/* ── Content ───────────────────────────────── */
+.orot-timeline__content {
+  color: var(--orot-color-text);
+  font-size: var(--orot-font-size-md);
+  padding-top: 1px;
+}
+
+/* ── Pending ───────────────────────────────── */
+.orot-timeline__item--pending .orot-timeline__tail {
+  border-left: 2px dashed var(--orot-color-border);
+  background: none;
+  width: 0;
+}
+
+.orot-timeline__pending-dot {
+  display: block;
+  width: 10px;
+  height: 10px;
+  border-radius: var(--orot-radius-full);
+  background: var(--orot-color-fill-secondary);
+}
+
+/* ── Alternate mode ────────────────────────── */
+.orot-timeline--alternate .orot-timeline__item:nth-child(odd) {
+  direction: ltr;
+}
+.orot-timeline--alternate .orot-timeline__item:nth-child(even) {
+  direction: rtl;
+}
+.orot-timeline--alternate .orot-timeline__item:nth-child(even) .orot-timeline__content {
+  direction: ltr;
+  text-align: right;
+}
+
+/* ── Right mode ────────────────────────────── */
+.orot-timeline--right .orot-timeline__item {
+  direction: rtl;
+}
+.orot-timeline--right .orot-timeline__content {
+  direction: ltr;
+  text-align: right;
+}

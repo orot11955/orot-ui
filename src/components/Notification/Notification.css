@@ -1,0 +1,93 @@
+/* ── Container positions ───────────────────── */
+.orot-notification-container {
+  position: fixed;
+  z-index: 1050;
+  display: flex;
+  flex-direction: column;
+  gap: var(--orot-space-2);
+  pointer-events: none;
+  max-width: 384px;
+  width: 100%;
+}
+
+.orot-notification-container--topRight    { top: var(--orot-space-5); right: var(--orot-space-5); }
+.orot-notification-container--topLeft     { top: var(--orot-space-5); left: var(--orot-space-5); }
+.orot-notification-container--bottomRight { bottom: var(--orot-space-5); right: var(--orot-space-5); }
+.orot-notification-container--bottomLeft  { bottom: var(--orot-space-5); left: var(--orot-space-5); }
+.orot-notification-container--top    { top: var(--orot-space-5); left: 50%; transform: translateX(-50%); }
+.orot-notification-container--bottom { bottom: var(--orot-space-5); left: 50%; transform: translateX(-50%); }
+
+/* ── Notification item ─────────────────────── */
+.orot-notification {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--orot-space-3);
+  background: var(--orot-color-bg-elevated);
+  border: var(--orot-border-width) solid var(--orot-color-border-secondary);
+  border-radius: var(--orot-radius-md);
+  box-shadow: var(--orot-shadow-lg);
+  padding: var(--orot-space-4);
+  pointer-events: auto;
+  animation: orot-notification-in var(--orot-transition-fast) ease;
+  cursor: default;
+}
+
+@keyframes orot-notification-in {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.orot-notification--success { border-left: 4px solid var(--orot-color-success); }
+.orot-notification--info    { border-left: 4px solid var(--orot-color-primary); }
+.orot-notification--warning { border-left: 4px solid var(--orot-color-warning); }
+.orot-notification--error   { border-left: 4px solid var(--orot-color-error); }
+
+.orot-notification__icon {
+  font-size: 20px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.orot-notification__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.orot-notification__message {
+  font-weight: var(--orot-font-weight-medium);
+  font-size: var(--orot-font-size-md);
+  color: var(--orot-color-text);
+  line-height: 1.4;
+}
+
+.orot-notification__description {
+  font-size: var(--orot-font-size-sm);
+  color: var(--orot-color-text-secondary);
+  margin-top: var(--orot-space-1);
+  line-height: 1.5;
+}
+
+.orot-notification__btn {
+  margin-top: var(--orot-space-2);
+}
+
+.orot-notification__close {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--orot-color-text-quaternary);
+  font-size: var(--orot-font-size-sm);
+  padding: 0;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--orot-radius-sm);
+  transition: background var(--orot-transition-fast), color var(--orot-transition-fast);
+}
+.orot-notification__close:hover {
+  background: var(--orot-color-fill-secondary);
+  color: var(--orot-color-text);
+}

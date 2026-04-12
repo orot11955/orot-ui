@@ -1,0 +1,182 @@
+/* ── Radio wrapper ───────────────────────────────────── */
+.orot-radio {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--orot-space-2);
+  min-width: 0;
+  cursor: pointer;
+  user-select: none;
+  font-family: var(--orot-font-family);
+  font-size: var(--orot-font-size-md);
+  color: var(--orot-color-text);
+}
+
+.orot-radio--block {
+  width: 100%;
+}
+
+.orot-radio--disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.orot-radio__input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+/* ── Custom circle ─────────────────────────��─────────── */
+.orot-radio__circle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border: var(--orot-border-width) solid var(--orot-color-border-strong);
+  border-radius: var(--orot-radius-full);
+  background: var(--orot-color-bg);
+  flex-shrink: 0;
+  transition: border-color var(--orot-transition-fast);
+}
+
+.orot-radio:hover:not(.orot-radio--disabled) .orot-radio__circle {
+  border-color: var(--orot-color-primary);
+}
+
+.orot-radio__circle::after {
+  content: '';
+  display: block;
+  width: 6px;
+  height: 6px;
+  border-radius: var(--orot-radius-full);
+  background: var(--orot-color-primary);
+  transform: scale(0);
+  transition: transform var(--orot-transition-fast);
+}
+
+.orot-radio--checked .orot-radio__circle {
+  border-color: var(--orot-color-primary);
+}
+
+.orot-radio--checked .orot-radio__circle::after {
+  transform: scale(1);
+}
+
+.orot-radio__label {
+  min-width: 0;
+}
+
+/* ── Group ───────────────────────────────────────────── */
+.orot-radio-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--orot-space-3);
+}
+
+.orot-radio-group--sm {
+  gap: var(--orot-space-2);
+  font-size: var(--orot-font-size-sm);
+}
+
+.orot-radio-group--lg {
+  gap: var(--orot-space-4);
+  font-size: var(--orot-font-size-lg);
+}
+
+.orot-radio--sm {
+  font-size: var(--orot-font-size-sm);
+}
+
+.orot-radio--sm .orot-radio__circle {
+  width: 14px;
+  height: 14px;
+}
+
+.orot-radio--sm .orot-radio__circle::after {
+  width: 5px;
+  height: 5px;
+}
+
+.orot-radio--lg {
+  font-size: var(--orot-font-size-lg);
+}
+
+.orot-radio--lg .orot-radio__circle {
+  width: 18px;
+  height: 18px;
+}
+
+.orot-radio--lg .orot-radio__circle::after {
+  width: 7px;
+  height: 7px;
+}
+
+/* ── Button style group ──────────────────────────────── */
+.orot-radio-group--button {
+  gap: 0;
+  border: var(--orot-border-width) solid var(--orot-color-border);
+  border-radius: var(--orot-radius-sm);
+  overflow: hidden;
+  display: inline-flex;
+}
+
+.orot-radio-group--block.orot-radio-group--button {
+  display: flex;
+  width: 100%;
+}
+
+.orot-radio-group--button .orot-radio {
+  padding: 0 var(--orot-space-4);
+  height: var(--orot-size-md);
+  border-radius: 0;
+  gap: 0;
+  border-right: var(--orot-border-width) solid var(--orot-color-border);
+  font-size: var(--orot-font-size-md);
+  justify-content: center;
+  transition: background var(--orot-transition-fast), color var(--orot-transition-fast);
+}
+
+.orot-radio-group--block.orot-radio-group--button .orot-radio {
+  flex: 1;
+}
+
+.orot-radio-group--button.orot-radio-group--sm .orot-radio {
+  height: var(--orot-size-sm);
+  padding: 0 var(--orot-space-3);
+  font-size: var(--orot-font-size-sm);
+}
+
+.orot-radio-group--button.orot-radio-group--lg .orot-radio {
+  height: var(--orot-size-lg);
+  padding: 0 var(--orot-space-5);
+  font-size: var(--orot-font-size-lg);
+}
+
+.orot-radio-group--button .orot-radio:last-child {
+  border-right: none;
+}
+
+.orot-radio-group--button .orot-radio:hover:not(.orot-radio--disabled) {
+  background: var(--orot-color-bg-hover);
+}
+
+/* solid (default): fill background on checked */
+.orot-radio-group--button .orot-radio--checked,
+.orot-radio-group--button-solid .orot-radio--checked {
+  background: var(--orot-color-primary);
+  color: var(--orot-color-primary-text);
+  border-right-color: var(--orot-color-primary);
+}
+
+/* outline: only change text + border color on checked, no fill */
+.orot-radio-group--button-outline .orot-radio--checked {
+  background: transparent;
+  color: var(--orot-color-primary);
+  border-right-color: var(--orot-color-primary);
+  box-shadow: inset 0 0 0 var(--orot-border-width) var(--orot-color-primary);
+}
+
+.orot-radio-group--button .orot-radio__circle { display: none; }

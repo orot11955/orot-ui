@@ -1,0 +1,91 @@
+/* ── Checkbox wrapper ────────────────────────────────── */
+.orot-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--orot-space-2);
+  cursor: pointer;
+  user-select: none;
+  font-family: var(--orot-font-family);
+  font-size: var(--orot-font-size-md);
+  color: var(--orot-color-text);
+}
+
+.orot-checkbox--disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+/* ── Hidden native input ─────────────────────────────── */
+.orot-checkbox__input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+/* ── Custom box ──────────────────────────────────────── */
+.orot-checkbox__box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border: var(--orot-border-width) solid var(--orot-color-border-strong);
+  border-radius: var(--orot-radius-sm);
+  background: var(--orot-color-bg);
+  flex-shrink: 0;
+  transition:
+    border-color var(--orot-transition-fast),
+    background var(--orot-transition-fast);
+}
+
+.orot-checkbox:hover:not(.orot-checkbox--disabled) .orot-checkbox__box {
+  border-color: var(--orot-color-primary);
+}
+
+.orot-checkbox__box::after {
+  content: '';
+  display: block;
+  width: 4px;
+  height: 8px;
+  border: 1.5px solid transparent;
+  border-top: none;
+  border-left: none;
+  transform: rotate(45deg) translateY(-1px);
+  opacity: 0;
+  transition: opacity var(--orot-transition-fast);
+}
+
+/* Checked */
+.orot-checkbox--checked .orot-checkbox__box {
+  background: var(--orot-color-primary);
+  border-color: var(--orot-color-primary);
+}
+
+.orot-checkbox--checked .orot-checkbox__box::after {
+  border-color: var(--orot-color-primary-text);
+  opacity: 1;
+}
+
+/* Indeterminate */
+.orot-checkbox--indeterminate .orot-checkbox__box {
+  background: var(--orot-color-primary);
+  border-color: var(--orot-color-primary);
+}
+
+.orot-checkbox--indeterminate .orot-checkbox__box::after {
+  width: 8px;
+  height: 0;
+  border: none;
+  border-top: 1.5px solid var(--orot-color-primary-text);
+  transform: none;
+  opacity: 1;
+}
+
+/* ── Group ───────────────────────────────────────────── */
+.orot-checkbox-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--orot-space-3);
+}

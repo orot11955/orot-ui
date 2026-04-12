@@ -1,0 +1,85 @@
+/* ── Badge wrapper ───────────────────────────────────── */
+.orot-badge {
+  position: relative;
+  display: inline-flex;
+  font-family: var(--orot-font-family);
+  font-size: var(--orot-font-size-md);
+}
+
+/* ── Count badge ─────────────────────────────────────── */
+.orot-badge__count {
+  position: absolute;
+  top: 0;
+  right: 0;
+  transform: translate(50%, -50%);
+  min-width: 20px;
+  height: 20px;
+  padding: 0 var(--orot-space-1);
+  background: var(--orot-color-danger);
+  color: #fff;
+  border-radius: var(--orot-radius-full);
+  font-size: var(--orot-font-size-xs);
+  font-weight: var(--orot-font-weight-bold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  z-index: 1;
+  white-space: nowrap;
+}
+
+/* Standalone (no children) */
+.orot-badge--standalone .orot-badge__count {
+  position: static;
+  transform: none;
+}
+
+/* ── Dot badge ───────────────────────────────────────── */
+.orot-badge__dot {
+  position: absolute;
+  top: 0;
+  right: 0;
+  transform: translate(50%, -50%);
+  width: 8px;
+  height: 8px;
+  border-radius: var(--orot-radius-full);
+  background: var(--orot-color-danger);
+  z-index: 1;
+}
+
+.orot-badge--standalone .orot-badge__dot {
+  position: static;
+  transform: none;
+}
+
+/* ── Status badge ────────────────────────────────────── */
+.orot-badge--status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--orot-space-2);
+  font-size: var(--orot-font-size-sm);
+  color: var(--orot-color-text);
+}
+
+.orot-badge__status-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--orot-radius-full);
+  flex-shrink: 0;
+}
+
+.orot-badge--default    .orot-badge__status-dot { background: var(--orot-color-border-strong); }
+.orot-badge--success    .orot-badge__status-dot { background: var(--orot-color-success); }
+.orot-badge--error      .orot-badge__status-dot { background: var(--orot-color-danger); }
+.orot-badge--warning    .orot-badge__status-dot { background: var(--orot-color-warning); }
+.orot-badge--processing .orot-badge__status-dot {
+  background: var(--orot-color-info);
+  box-shadow: 0 0 0 2px var(--orot-color-info-bg);
+  animation: orot-badge-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes orot-badge-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 var(--orot-color-info-bg); }
+  50%       { box-shadow: 0 0 0 4px transparent; }
+}

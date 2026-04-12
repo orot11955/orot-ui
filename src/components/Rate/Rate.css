@@ -1,0 +1,43 @@
+.orot-rate {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--orot-space-1);
+  font-family: var(--orot-font-family);
+}
+
+.orot-rate__item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--orot-color-border-strong);
+  transition: color 0.15s, transform 0.1s;
+  line-height: 1;
+  font-size: 1.5rem;
+  user-select: none;
+}
+
+.orot-rate__item:hover {
+  transform: scale(1.12);
+}
+
+.orot-rate__item--filled,
+.orot-rate__item--half {
+  color: #f5c518;
+}
+
+.orot-rate__star-svg {
+  width: 1em;
+  height: 1em;
+  display: block;
+}
+
+.orot-rate--disabled .orot-rate__item {
+  cursor: default;
+  pointer-events: none;
+}
+
+.orot-rate--disabled .orot-rate__item--filled,
+.orot-rate--disabled .orot-rate__item--half {
+  color: color-mix(in srgb, #f5c518 60%, transparent);
+}

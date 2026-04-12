@@ -1,0 +1,91 @@
+/* ── Overlay ─────────────────────────────────────────── */
+.orot-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--orot-overlay-bg);
+  z-index: var(--orot-z-modal-bg);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: var(--orot-space-12) var(--orot-space-4);
+  animation: orot-modal-overlay-in var(--orot-transition-fast) ease;
+  overflow-y: auto;
+}
+
+.orot-modal-overlay--centered {
+  align-items: center;
+  padding: var(--orot-space-4);
+}
+
+@keyframes orot-modal-overlay-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Modal box ───────────────────────────────────────── */
+.orot-modal {
+  position: relative;
+  background: var(--orot-color-bg);
+  border-radius: var(--orot-radius-md);
+  box-shadow: var(--orot-shadow-lg);
+  font-family: var(--orot-font-family);
+  font-size: var(--orot-font-size-md);
+  color: var(--orot-color-text);
+  max-height: calc(100vh - var(--orot-space-12) * 2);
+  display: flex;
+  flex-direction: column;
+  animation: orot-modal-in var(--orot-transition-base) ease;
+  pointer-events: auto;
+}
+
+@keyframes orot-modal-in {
+  from { opacity: 0; transform: scale(0.96) translateY(-8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* ── Header ──────────────────────────────────────────── */
+.orot-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--orot-space-4) var(--orot-space-5);
+  border-bottom: var(--orot-border-width) solid var(--orot-color-border);
+  flex-shrink: 0;
+}
+
+.orot-modal__title {
+  font-weight: var(--orot-font-weight-medium);
+  font-size: var(--orot-font-size-lg);
+}
+
+.orot-modal__close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--orot-color-text-muted);
+  font-size: var(--orot-font-size-lg);
+  padding: 0;
+  line-height: 1;
+  transition: color var(--orot-transition-fast);
+  display: flex;
+  align-items: center;
+}
+.orot-modal__close:hover { color: var(--orot-color-text); }
+
+/* ── Body ────────────────────────────────────────────── */
+.orot-modal__body {
+  padding: var(--orot-space-5);
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* ── Footer ──────────────────────────────────────────── */
+.orot-modal__footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--orot-space-2);
+  padding: var(--orot-space-4) var(--orot-space-5);
+  border-top: var(--orot-border-width) solid var(--orot-color-border);
+  flex-shrink: 0;
+}

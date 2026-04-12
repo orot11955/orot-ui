@@ -1,0 +1,78 @@
+/* orot-ui global styles
+   사용처 프로젝트에서 단 한 번만 import 하세요.
+
+   Usage:
+     import 'orot-ui/styles/global.css';   // 기반 토큰 + 리셋
+     import 'orot-ui/themes/light.css';     // 원하는 테마 선택
+*/
+
+@import '../themes/base.css';
+
+/* ── CSS Reset (minimal) ─────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--orot-font-family);
+  font-size: var(--orot-font-size-md);
+  line-height: var(--orot-line-height-base);
+  color: var(--orot-color-text);
+  background-color: var(--orot-color-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+button,
+input,
+optgroup,
+select,
+textarea {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* ── Scrollbar (minimal, themed) ────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--orot-color-border-strong);
+  border-radius: var(--orot-radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--orot-color-text-muted);
+}
+
+/* ── Focus ring ──────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--orot-color-border-focus);
+  outline-offset: 2px;
+}

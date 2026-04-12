@@ -1,0 +1,153 @@
+/* ── Table wrapper ───────────────────────────────────── */
+.orot-table-wrapper {
+  font-family: var(--orot-font-family);
+  font-size: var(--orot-font-size-md);
+  color: var(--orot-color-text);
+}
+
+.orot-table__scroll {
+  overflow: auto;
+}
+
+/* ── Table ───────────────────────────────────────────── */
+.orot-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.orot-table--bordered {
+  border: var(--orot-border-width) solid var(--orot-color-border);
+}
+
+/* ── Header ──────────────────────────────────────────── */
+.orot-table__head {
+  background: var(--orot-color-bg-secondary);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.orot-table__th {
+  padding: var(--orot-space-3) var(--orot-space-4);
+  font-weight: var(--orot-font-weight-medium);
+  color: var(--orot-color-text-secondary);
+  text-align: left;
+  border-bottom: var(--orot-border-width) solid var(--orot-color-border);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.orot-table--bordered .orot-table__th {
+  border-right: var(--orot-border-width) solid var(--orot-color-border);
+}
+.orot-table--bordered .orot-table__th:last-child { border-right: none; }
+
+.orot-table__th--fixed-left,
+.orot-table__th--fixed-right {
+  position: sticky;
+  z-index: 2;
+  background: var(--orot-color-bg-secondary);
+}
+
+.orot-table__th--fixed-left { left: 0; }
+.orot-table__th--fixed-right { right: 0; }
+
+.orot-table--sm .orot-table__th {
+  padding: var(--orot-space-2) var(--orot-space-3);
+  font-size: var(--orot-font-size-sm);
+}
+
+.orot-table__th--sortable {
+  cursor: pointer;
+  user-select: none;
+}
+.orot-table__th--sortable:hover { color: var(--orot-color-text); }
+
+.orot-table__sort-icon {
+  display: inline-flex;
+  flex-direction: column;
+  margin-left: var(--orot-space-1);
+  font-size: 8px;
+  color: var(--orot-color-text-muted);
+  vertical-align: middle;
+  gap: 1px;
+}
+
+.orot-table__sort-icon--asc  .orot-table__sort-down,
+.orot-table__sort-icon--desc .orot-table__sort-up {
+  opacity: 0.3;
+}
+
+/* ── Body ────────────────────────────────────────────── */
+.orot-table__row {
+  border-bottom: var(--orot-border-width) solid var(--orot-color-border);
+  transition: background var(--orot-transition-fast);
+}
+
+.orot-table__row:last-child { border-bottom: none; }
+.orot-table__row:hover { background: var(--orot-color-bg-hover); }
+
+.orot-table__row--selected { background: var(--orot-color-bg-tertiary); }
+.orot-table__row--selected:hover { background: var(--orot-color-bg-active); }
+
+.orot-table__td {
+  padding: var(--orot-space-3) var(--orot-space-4);
+  color: var(--orot-color-text);
+  overflow: hidden;
+}
+
+.orot-table--bordered .orot-table__td {
+  border-right: var(--orot-border-width) solid var(--orot-color-border);
+}
+.orot-table--bordered .orot-table__td:last-child { border-right: none; }
+
+.orot-table--sm .orot-table__td {
+  padding: var(--orot-space-2) var(--orot-space-3);
+  font-size: var(--orot-font-size-sm);
+}
+
+.orot-table__td--ellipsis {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.orot-table__td--fixed-left,
+.orot-table__td--fixed-right {
+  position: sticky;
+  z-index: 1;
+  background: var(--orot-color-bg);
+}
+
+.orot-table__td--fixed-left { left: 0; }
+.orot-table__td--fixed-right { right: 0; }
+
+/* ── Checkbox column ─────────────────────────────────── */
+.orot-table__th--selection,
+.orot-table__td--selection {
+  width: 40px;
+  text-align: center;
+  padding: var(--orot-space-3) var(--orot-space-2);
+}
+
+/* ── Empty ───────────────────────────────────────────── */
+.orot-table__empty {
+  text-align: center;
+  padding: var(--orot-space-10) var(--orot-space-4);
+  color: var(--orot-color-text-muted);
+  font-size: var(--orot-font-size-sm);
+}
+
+/* ── Loading overlay ─────────────────────────────────── */
+.orot-table-wrapper--loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.orot-table__pagination {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: var(--orot-space-3);
+}

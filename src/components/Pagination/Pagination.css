@@ -1,0 +1,158 @@
+/* ── Pagination ──────────────────────────────────────── */
+.orot-pagination {
+  display: flex;
+  align-items: center;
+  gap: var(--orot-space-1);
+  font-family: var(--orot-font-family);
+  font-size: var(--orot-font-size-md);
+}
+
+/* ── Page button base ────────────────────────────────── */
+.orot-pagination__item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--orot-size-md);
+  height: var(--orot-size-md);
+  padding: 0 var(--orot-space-2);
+  border: var(--orot-border-width) solid var(--orot-color-border);
+  border-radius: var(--orot-radius-sm);
+  cursor: pointer;
+  color: var(--orot-color-text-secondary);
+  background: var(--orot-color-bg);
+  transition: color var(--orot-transition-fast), border-color var(--orot-transition-fast), background var(--orot-transition-fast);
+  user-select: none;
+}
+
+.orot-pagination__item:hover:not(.orot-pagination__item--disabled):not(.orot-pagination__item--active) {
+  color: var(--orot-color-text);
+  border-color: var(--orot-color-border-strong);
+}
+
+.orot-pagination__item--active {
+  background: var(--orot-color-primary);
+  border-color: var(--orot-color-primary);
+  color: var(--orot-color-primary-text);
+  font-weight: var(--orot-font-weight-medium);
+  cursor: default;
+}
+
+.orot-pagination__item--disabled {
+  color: var(--orot-color-text-disabled);
+  border-color: var(--orot-color-border);
+  cursor: not-allowed;
+  background: var(--orot-color-bg-secondary);
+}
+
+/* ── Ellipsis ────────────────────────────────────────── */
+.orot-pagination__ellipsis {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--orot-size-md);
+  height: var(--orot-size-md);
+  color: var(--orot-color-text-muted);
+  cursor: pointer;
+  border: var(--orot-border-width) solid transparent;
+  border-radius: var(--orot-radius-sm);
+  font-size: var(--orot-font-size-sm);
+  transition: color var(--orot-transition-fast);
+}
+
+.orot-pagination__ellipsis:hover {
+  color: var(--orot-color-text);
+  border-color: var(--orot-color-border);
+}
+
+/* ── Prev / Next ─────────────────────────────────────── */
+.orot-pagination__prev,
+.orot-pagination__next {
+  font-size: var(--orot-font-size-md);
+}
+
+/* ── Size changer ────────────────────────────────────── */
+.orot-pagination__size-changer {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--orot-space-1);
+  margin-left: var(--orot-space-2);
+}
+
+.orot-pagination__size-select {
+  height: var(--orot-size-md);
+  padding: 0 var(--orot-space-2);
+  border: var(--orot-border-width) solid var(--orot-color-border);
+  border-radius: var(--orot-radius-sm);
+  background: var(--orot-color-bg);
+  color: var(--orot-color-text);
+  font-family: var(--orot-font-family);
+  font-size: var(--orot-font-size-sm);
+  cursor: pointer;
+}
+
+/* ── Quick jumper ────────────────────────────────────── */
+.orot-pagination__jumper {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--orot-space-2);
+  margin-left: var(--orot-space-2);
+  font-size: var(--orot-font-size-sm);
+  color: var(--orot-color-text-secondary);
+}
+
+.orot-pagination__jumper-input {
+  width: 50px;
+  height: var(--orot-size-md);
+  padding: 0 var(--orot-space-2);
+  border: var(--orot-border-width) solid var(--orot-color-border);
+  border-radius: var(--orot-radius-sm);
+  background: var(--orot-color-bg);
+  color: var(--orot-color-text);
+  font-family: var(--orot-font-family);
+  font-size: var(--orot-font-size-sm);
+  text-align: center;
+}
+
+.orot-pagination__jumper-input:focus {
+  outline: 2px solid var(--orot-color-border-focus);
+  outline-offset: 1px;
+}
+
+/* ── Total ───────────────────────────────────────────── */
+.orot-pagination__total {
+  margin-right: var(--orot-space-2);
+  font-size: var(--orot-font-size-sm);
+  color: var(--orot-color-text-secondary);
+}
+
+/* ── Disabled whole ──────────────────────────────────── */
+.orot-pagination--disabled {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+/* ── Simple ──────────────────────────────────────────── */
+.orot-pagination--simple .orot-pagination__simple-page {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--orot-space-2);
+  font-size: var(--orot-font-size-sm);
+  color: var(--orot-color-text-secondary);
+}
+
+.orot-pagination--simple .orot-pagination__simple-input {
+  width: 40px;
+  height: var(--orot-size-sm);
+  border: var(--orot-border-width) solid var(--orot-color-border);
+  border-radius: var(--orot-radius-sm);
+  text-align: center;
+  background: var(--orot-color-bg);
+  font-family: var(--orot-font-family);
+  font-size: var(--orot-font-size-sm);
+  color: var(--orot-color-text);
+}
+
+/* ── Align ───────────────────────────────────────────── */
+.orot-pagination--start  { justify-content: flex-start; }
+.orot-pagination--center { justify-content: center; }
+.orot-pagination--end    { justify-content: flex-end; }

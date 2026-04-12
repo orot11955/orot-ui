@@ -1,0 +1,207 @@
+.orot-upload {
+  font-family: var(--orot-font-family);
+  font-size: var(--orot-font-size-md);
+}
+
+/* Input hidden */
+.orot-upload__input {
+  display: none;
+}
+
+/* Trigger (버튼형) */
+.orot-upload__trigger {
+  display: inline-block;
+}
+
+.orot-upload__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--orot-space-2);
+  padding: var(--orot-space-2) var(--orot-space-4);
+  background: var(--orot-color-bg);
+  border: 1px solid var(--orot-color-border);
+  border-radius: var(--orot-radius-sm);
+  color: var(--orot-color-text);
+  font-family: inherit;
+  font-size: var(--orot-font-size-md);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.orot-upload__btn:hover:not(:disabled) {
+  border-color: var(--orot-color-border-strong);
+  background: var(--orot-color-bg-hover);
+}
+
+.orot-upload__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.orot-upload__icon {
+  width: 1em;
+  height: 1em;
+}
+
+/* Dragger */
+.orot-upload__dragger {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--orot-space-2);
+  padding: var(--orot-space-8) var(--orot-space-6);
+  border: 2px dashed var(--orot-color-border);
+  border-radius: var(--orot-radius-sm);
+  background: var(--orot-color-bg-secondary);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  text-align: center;
+}
+
+.orot-upload__dragger:hover,
+.orot-upload--dragging .orot-upload__dragger {
+  border-color: var(--orot-color-border-focus);
+  background: var(--orot-color-primary-bg);
+}
+
+.orot-upload--disabled .orot-upload__dragger {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.orot-upload__icon {
+  width: 2rem;
+  height: 2rem;
+  color: var(--orot-color-text-muted);
+}
+
+.orot-upload__drag-text {
+  margin: 0;
+  color: var(--orot-color-text);
+  font-size: var(--orot-font-size-md);
+}
+
+.orot-upload__drag-hint {
+  margin: 0;
+  color: var(--orot-color-text-muted);
+  font-size: var(--orot-font-size-sm);
+}
+
+/* File list */
+.orot-upload__list {
+  list-style: none;
+  margin: var(--orot-space-2) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--orot-space-1);
+}
+
+.orot-upload__item {
+  display: flex;
+  align-items: center;
+  gap: var(--orot-space-2);
+  padding: var(--orot-space-1) var(--orot-space-2);
+  border-radius: var(--orot-radius-sm);
+  background: var(--orot-color-bg-secondary);
+  font-size: var(--orot-font-size-sm);
+  color: var(--orot-color-text);
+  min-width: 0;
+}
+
+.orot-upload__item--error {
+  background: var(--orot-color-danger-bg);
+  color: var(--orot-color-danger);
+}
+
+.orot-upload__file-icon {
+  width: 1em;
+  height: 1em;
+  flex-shrink: 0;
+  color: var(--orot-color-text-muted);
+}
+
+.orot-upload__name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.orot-upload__name:hover {
+  text-decoration: underline;
+}
+
+/* Progress bar */
+.orot-upload__progress {
+  flex-shrink: 0;
+  width: 80px;
+  height: 4px;
+  background: var(--orot-color-border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.orot-upload__progress-bar {
+  display: block;
+  height: 100%;
+  background: var(--orot-color-primary);
+  transition: width 0.2s;
+}
+
+/* Remove button */
+.orot-upload__remove {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--orot-color-text-muted);
+  padding: 0 var(--orot-space-1);
+  font-size: var(--orot-font-size-xs);
+  line-height: 1;
+  border-radius: var(--orot-radius-sm);
+  transition: color 0.1s;
+}
+
+.orot-upload__remove:hover {
+  color: var(--orot-color-danger);
+}
+
+/* Picture card / circle list */
+.orot-upload__list--picture-card,
+.orot-upload__list--picture-circle {
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.orot-upload__list--picture-card .orot-upload__item,
+.orot-upload__list--picture-circle .orot-upload__item {
+  flex-direction: column;
+  width: 96px;
+  height: 96px;
+  padding: var(--orot-space-1);
+  border: 1px solid var(--orot-color-border);
+  justify-content: center;
+}
+
+.orot-upload__list--picture-circle .orot-upload__item {
+  border-radius: 50%;
+}
+
+.orot-upload__thumb {
+  width: 48px;
+  height: 48px;
+  overflow: hidden;
+  border-radius: var(--orot-radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.orot-upload__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}

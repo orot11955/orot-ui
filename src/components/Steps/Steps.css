@@ -1,0 +1,188 @@
+/* ── Steps ───────────────────────────────────────────── */
+.orot-steps {
+  display: flex;
+  font-family: var(--orot-font-family);
+  font-size: var(--orot-font-size-md);
+  width: 100%;
+  min-width: 0;
+}
+
+.orot-steps--horizontal { flex-direction: row; align-items: flex-start; }
+.orot-steps--vertical   { flex-direction: column; }
+
+/* ── Step item ───────────────────────────────────────── */
+.orot-step {
+  display: flex;
+  position: relative;
+  min-width: 0;
+}
+
+/* Horizontal: icon on top, content below, tail extends right */
+.orot-steps--horizontal .orot-step {
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.orot-steps--horizontal .orot-step:last-child {
+  flex: none;
+}
+
+/* Vertical: icon on left, content on right */
+.orot-steps--vertical .orot-step {
+  flex-direction: row;
+  flex: none;
+  align-items: flex-start;
+  padding-bottom: var(--orot-space-6);
+}
+
+.orot-steps--vertical .orot-step:last-child {
+  padding-bottom: 0;
+}
+
+/* ── Icon + tail ─────────────────────────────────────── */
+.orot-step__icon-wrap {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* Horizontal: icon and tail side by side, full width of step */
+.orot-steps--horizontal .orot-step__icon-wrap {
+  flex-direction: row;
+  width: 100%;
+}
+
+/* Vertical: icon on top, tail below */
+.orot-steps--vertical .orot-step__icon-wrap {
+  flex-direction: column;
+  align-items: center;
+  align-self: stretch;
+  margin-right: var(--orot-space-3);
+}
+
+.orot-step__icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--orot-font-size-sm);
+  font-weight: var(--orot-font-weight-medium);
+  border: 2px solid var(--orot-color-border-strong);
+  color: var(--orot-color-text-secondary);
+  background: var(--orot-color-bg);
+  flex-shrink: 0;
+  transition: border-color var(--orot-transition-fast), background var(--orot-transition-fast);
+  z-index: 1;
+}
+
+.orot-steps--sm .orot-step__icon {
+  width: 24px;
+  height: 24px;
+  font-size: var(--orot-font-size-xs);
+}
+
+/* Status */
+.orot-step--process .orot-step__icon {
+  background: var(--orot-color-primary);
+  border-color: var(--orot-color-primary);
+  color: var(--orot-color-primary-text);
+}
+
+.orot-step--finish .orot-step__icon {
+  background: var(--orot-color-primary);
+  border-color: var(--orot-color-primary);
+  color: var(--orot-color-primary-text);
+}
+
+.orot-step--error .orot-step__icon {
+  background: var(--orot-color-danger-bg);
+  border-color: var(--orot-color-danger);
+  color: var(--orot-color-danger);
+}
+
+/* Progress dot */
+.orot-steps--dot .orot-step__icon {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: none;
+  font-size: 0;
+}
+.orot-steps--dot .orot-step--wait    .orot-step__icon { background: var(--orot-color-border-strong); }
+.orot-steps--dot .orot-step--process .orot-step__icon { background: var(--orot-color-primary); }
+.orot-steps--dot .orot-step--finish  .orot-step__icon { background: var(--orot-color-primary); }
+.orot-steps--dot .orot-step--error   .orot-step__icon { background: var(--orot-color-danger); }
+
+/* ── Connector tail ──────────────────────────────────── */
+.orot-step__tail {
+  background: var(--orot-color-border);
+  flex: 1;
+  transition: background var(--orot-transition-base);
+}
+
+.orot-steps--horizontal .orot-step__tail {
+  height: 1px;
+  margin: 0 var(--orot-space-2);
+  align-self: center;
+  min-width: var(--orot-space-6);
+}
+
+.orot-steps--vertical .orot-step__tail {
+  width: 1px;
+  min-height: var(--orot-space-4);
+  margin: var(--orot-space-1) auto;
+  flex: 1;
+}
+
+.orot-step--finish .orot-step__tail { background: var(--orot-color-primary); }
+.orot-step--error  .orot-step__tail { background: var(--orot-color-danger); }
+
+/* ── Content ─────────────────────────────────────────── */
+.orot-step__content {
+  min-width: 0;
+}
+
+/* Horizontal: title/desc below icon row, with padding-top */
+.orot-steps--horizontal .orot-step__content {
+  padding-top: var(--orot-space-2);
+  padding-left: 0;
+}
+
+/* Vertical: title/desc beside the icon column */
+.orot-steps--vertical .orot-step__content {
+  padding-top: 4px;
+}
+
+.orot-step__title {
+  font-weight: var(--orot-font-weight-medium);
+  color: var(--orot-color-text);
+  line-height: var(--orot-line-height-tight);
+}
+
+/* Vertical: align title vertically with the icon */
+.orot-steps--vertical .orot-step__title {
+  line-height: 32px;
+}
+
+.orot-steps--sm .orot-step__title { font-size: var(--orot-font-size-sm); }
+.orot-steps--vertical.orot-steps--sm .orot-step__title { line-height: 24px; }
+
+.orot-step--wait .orot-step__title { color: var(--orot-color-text-secondary); }
+.orot-step--error .orot-step__title { color: var(--orot-color-danger); }
+
+.orot-step__description {
+  font-size: var(--orot-font-size-sm);
+  color: var(--orot-color-text-muted);
+  margin-top: var(--orot-space-1);
+  line-height: var(--orot-line-height-base);
+}
+
+/* ── Clickable ───────────────────────────────────────── */
+.orot-step--clickable {
+  cursor: pointer;
+}
+.orot-step--clickable:hover .orot-step__title { color: var(--orot-color-text); }
+.orot-step--disabled { cursor: not-allowed; opacity: 0.45; }

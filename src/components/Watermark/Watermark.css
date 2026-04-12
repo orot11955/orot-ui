@@ -1,0 +1,10 @@
+.orot-watermark {
+  position: relative;
+}
+
+.orot-watermark__overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-repeat: repeat;
+}

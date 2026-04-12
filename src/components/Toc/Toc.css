@@ -1,0 +1,86 @@
+/* ── Table of Contents ───────────────────────── */
+.orot-toc {
+  font-family: var(--orot-font-family);
+  font-size: var(--orot-font-size-sm);
+  color: var(--orot-color-text-secondary);
+}
+
+/* ── Title ───────────────────────────────────── */
+.orot-toc__title {
+  font-size: var(--orot-font-size-xs);
+  font-weight: var(--orot-font-weight-bold);
+  color: var(--orot-color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: var(--orot-space-2);
+  padding: 0;
+}
+
+/* ── List ────────────────────────────────────── */
+.orot-toc__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.orot-toc__list--nested {
+  margin-top: 2px;
+  margin-left: var(--orot-space-3);
+}
+
+/* ── Item ────────────────────────────────────── */
+.orot-toc__item {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Link ────────────────────────────────────── */
+.orot-toc__link {
+  display: block;
+  padding: 3px var(--orot-space-2);
+  border-radius: var(--orot-radius-sm);
+  color: var(--orot-color-text-secondary);
+  text-decoration: none;
+  line-height: var(--orot-line-height-base);
+  transition:
+    color var(--orot-transition-fast),
+    background var(--orot-transition-fast);
+  border-left: 2px solid transparent;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.orot-toc__link:hover {
+  color: var(--orot-color-text);
+  background: var(--orot-color-fill-secondary);
+}
+
+.orot-toc__link--active {
+  color: var(--orot-color-primary);
+  border-left-color: var(--orot-color-primary);
+  font-weight: var(--orot-font-weight-medium);
+  background: var(--orot-color-fill-tertiary);
+}
+
+/* ── Level indents ───────────────────────────── */
+.orot-toc__link--level-1 { font-size: var(--orot-font-size-sm); }
+.orot-toc__link--level-2 { font-size: var(--orot-font-size-sm); }
+.orot-toc__link--level-3 {
+  font-size: var(--orot-font-size-xs);
+  color: var(--orot-color-text-muted);
+}
+.orot-toc__link--level-3:hover { color: var(--orot-color-text-secondary); }
+.orot-toc__link--level-3.orot-toc__link--active { color: var(--orot-color-primary); }
+
+.orot-toc__link--level-4,
+.orot-toc__link--level-5,
+.orot-toc__link--level-6 {
+  font-size: var(--orot-font-size-xs);
+  color: var(--orot-color-text-muted);
+  opacity: 0.8;
+}

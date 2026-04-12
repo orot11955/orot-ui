@@ -1,0 +1,69 @@
+/* orot-ui base tokens
+   구조적 토큰 — 테마와 무관하게 고정되는 값 */
+
+:root {
+  /* Typography */
+  --orot-font-family: 'Geist Mono', 'JetBrains Mono', 'Fira Mono', 'Consolas', monospace;
+  --orot-font-family-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+  --orot-font-size-xs:   11px;
+  --orot-font-size-sm:   12px;
+  --orot-font-size-md:   14px;
+  --orot-font-size-lg:   16px;
+  --orot-font-size-xl:   20px;
+  --orot-font-size-2xl:  24px;
+  --orot-font-size-3xl:  30px;
+  --orot-font-size-4xl:  36px;
+
+  --orot-font-weight-regular:  400;
+  --orot-font-weight-medium:   500;
+  --orot-font-weight-semibold: 600;
+  --orot-font-weight-bold:     700;
+
+  --orot-line-height-tight:  1.3;
+  --orot-line-height-base:   1.6;
+  --orot-line-height-loose:  1.9;
+
+  /* Spacing */
+  --orot-space-1:   4px;
+  --orot-space-2:   8px;
+  --orot-space-3:   12px;
+  --orot-space-4:   16px;
+  --orot-space-5:   20px;
+  --orot-space-6:   24px;
+  --orot-space-8:   32px;
+  --orot-space-10:  40px;
+  --orot-space-12:  48px;
+  --orot-space-16:  64px;
+
+  /* Border radius */
+  --orot-radius-none: 0;
+  --orot-radius-sm:   2px;
+  --orot-radius-md:   4px;
+  --orot-radius-lg:   8px;
+  --orot-radius-full: 9999px;
+
+  /* Border width */
+  --orot-border-width: 1px;
+
+  /* Transition */
+  --orot-transition-fast:   100ms ease;
+  --orot-transition-base:   150ms ease;
+  --orot-transition-normal: 200ms ease;
+  --orot-transition-slow:   250ms ease;
+
+  /* Z-index layers */
+  --orot-z-dropdown:    1000;
+  --orot-z-sticky:      1020;
+  --orot-z-fixed:       1030;
+  --orot-z-modal-bg:    1040;
+  --orot-z-modal:       1050;
+  --orot-z-popover:     1060;
+  --orot-z-tooltip:     1070;
+  --orot-z-notification: 1080;
+
+  /* Component size tokens (height) */
+  --orot-size-sm: 24px;
+  --orot-size-md: 32px;
+  --orot-size-lg: 40px;
+}

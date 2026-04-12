@@ -1,0 +1,85 @@
+/* ── Typography shared ───────────────────────────────── */
+.orot-typography {
+  font-family: var(--orot-font-family);
+  color: var(--orot-color-text);
+  line-height: var(--orot-line-height-base);
+}
+
+/* type modifiers */
+.orot-typography--secondary  { color: var(--orot-color-text-secondary); }
+.orot-typography--success    { color: var(--orot-color-success); }
+.orot-typography--warning    { color: var(--orot-color-warning); }
+.orot-typography--danger     { color: var(--orot-color-danger); }
+.orot-typography--disabled   { color: var(--orot-color-text-disabled); cursor: not-allowed; }
+
+/* ellipsis */
+.orot-typography--ellipsis {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* ── Title ───────────────────────────────────────────── */
+.orot-title {
+  margin: 0;
+  font-weight: var(--orot-font-weight-bold);
+  line-height: var(--orot-line-height-tight);
+  letter-spacing: -0.02em;
+}
+
+.orot-title--1 { font-size: var(--orot-font-size-4xl); }
+.orot-title--2 { font-size: var(--orot-font-size-3xl); }
+.orot-title--3 { font-size: var(--orot-font-size-2xl); }
+.orot-title--4 { font-size: var(--orot-font-size-xl); }
+.orot-title--5 { font-size: var(--orot-font-size-lg); }
+.orot-title--6 { font-size: var(--orot-font-size-md); }
+
+/* ── Text ────────────────────────────────────────────── */
+.orot-text {
+  font-size: var(--orot-font-size-md);
+}
+
+.orot-text--code {
+  font-family: var(--orot-font-family);
+  background: var(--orot-color-bg-secondary);
+  border: var(--orot-border-width) solid var(--orot-color-border);
+  border-radius: var(--orot-radius-sm);
+  padding: 1px 5px;
+  font-size: 0.9em;
+}
+
+.orot-text--mark {
+  background: var(--orot-color-warning-bg);
+  padding: 0 2px;
+}
+
+/* ── Paragraph ───────────────────────────────────────── */
+.orot-paragraph {
+  margin: 0;
+  font-size: var(--orot-font-size-md);
+  line-height: var(--orot-line-height-base);
+}
+
+.orot-paragraph + .orot-paragraph {
+  margin-top: var(--orot-space-4);
+}
+
+/* ── Link ────────────────────────────────────────────── */
+.orot-link {
+  color: var(--orot-color-text);
+  font-size: var(--orot-font-size-md);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--orot-color-border-strong);
+  cursor: pointer;
+  transition: text-decoration-color var(--orot-transition-fast), color var(--orot-transition-fast);
+}
+
+.orot-link:hover:not(.orot-typography--disabled) {
+  text-decoration-color: var(--orot-color-text);
+}
+
+.orot-link.orot-typography--disabled {
+  pointer-events: none;
+}

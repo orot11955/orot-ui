@@ -1,0 +1,118 @@
+export const NAV_ITEMS = [
+  {
+    group: 'Guide',
+    items: [
+      { label: 'Introduction', path: '/' },
+    ],
+  },
+  {
+    group: 'General',
+    items: [
+      { label: 'Button', path: '/components/button' },
+      { label: 'FloatButton', path: '/components/float-button' },
+      { label: 'Typography', path: '/components/typography' },
+      { label: 'Icon', path: '/components/icon' },
+      { label: 'Divider', path: '/components/divider' },
+    ],
+  },
+  {
+    group: 'Layout',
+    items: [
+      { label: 'Space', path: '/components/space' },
+      { label: 'Flex', path: '/components/flex' },
+      { label: 'Grid', path: '/components/grid' },
+      { label: 'Layout', path: '/components/layout' },
+      { label: 'Splitter', path: '/components/splitter' },
+      { label: 'Masonry', path: '/components/masonry' },
+    ],
+  },
+  {
+    group: 'Navigation',
+    items: [
+      { label: 'Tabs', path: '/components/tabs' },
+      { label: 'Menu', path: '/components/menu' },
+      { label: 'Breadcrumb', path: '/components/breadcrumb' },
+      { label: 'Dropdown', path: '/components/dropdown' },
+      { label: 'Pagination', path: '/components/pagination' },
+      { label: 'Anchor', path: '/components/anchor' },
+    ],
+  },
+  {
+    group: 'Data Entry',
+    items: [
+      { label: 'Input', path: '/components/input' },
+      { label: 'InputNumber', path: '/components/input-number' },
+      { label: 'Select', path: '/components/select' },
+      { label: 'AutoComplete', path: '/components/auto-complete' },
+      { label: 'Checkbox', path: '/components/checkbox' },
+      { label: 'Radio', path: '/components/radio' },
+      { label: 'Switch', path: '/components/switch' },
+      { label: 'Slider', path: '/components/slider' },
+      { label: 'ColorPicker', path: '/components/color-picker' },
+      { label: 'DatePicker', path: '/components/date-picker' },
+      { label: 'TimePicker', path: '/components/time-picker' },
+      { label: 'Form', path: '/components/form' },
+      { label: 'Mentions', path: '/components/mentions' },
+      { label: 'Rate', path: '/components/rate' },
+      { label: 'Upload', path: '/components/upload' },
+      { label: 'Cascader', path: '/components/cascader' },
+      { label: 'Transfer', path: '/components/transfer' },
+      { label: 'TreeSelect', path: '/components/tree-select' },
+    ],
+  },
+  {
+    group: 'Data Display',
+    items: [
+      { label: 'Avatar', path: '/components/avatar' },
+      { label: 'Card', path: '/components/card' },
+      { label: 'Tag', path: '/components/tag' },
+      { label: 'Badge', path: '/components/badge' },
+      { label: 'Tooltip', path: '/components/tooltip' },
+      { label: 'Popover', path: '/components/popover' },
+      { label: 'Collapse', path: '/components/collapse' },
+      { label: 'Table', path: '/components/table' },
+      { label: 'Descriptions', path: '/components/descriptions' },
+      { label: 'Empty', path: '/components/empty' },
+      { label: 'Image', path: '/components/image' },
+      { label: 'Statistic', path: '/components/statistic' },
+      { label: 'Segmented', path: '/components/segmented' },
+      { label: 'Timeline', path: '/components/timeline' },
+      { label: 'Carousel', path: '/components/carousel' },
+      { label: 'QRCode', path: '/components/qrcode' },
+      { label: 'Tree', path: '/components/tree' },
+      { label: 'Calendar', path: '/components/calendar' },
+    ],
+  },
+  {
+    group: 'Feedback',
+    items: [
+      { label: 'Alert', path: '/components/alert' },
+      { label: 'Drawer', path: '/components/drawer' },
+      { label: 'Modal', path: '/components/modal' },
+      { label: 'Spin', path: '/components/spin' },
+      { label: 'Skeleton', path: '/components/skeleton' },
+      { label: 'Progress', path: '/components/progress' },
+      { label: 'Watermark', path: '/components/watermark' },
+      { label: 'Notification', path: '/components/notification' },
+      { label: 'Message', path: '/components/message' },
+    ],
+  },
+  {
+    group: 'Advanced',
+    items: [
+      { label: 'Steps', path: '/components/steps' },
+      { label: 'Result', path: '/components/result' },
+      { label: 'Popconfirm', path: '/components/popconfirm' },
+      { label: 'Tour', path: '/components/tour' },
+      { label: 'Toc', path: '/components/toc' },
+    ],
+  },
+  {
+    group: 'Editor',
+    items: [
+      { label: 'MarkdownEditor', path: '/components/markdown-editor' },
+    ],
+  },
+] as const;
+
+export const HOME_COMPONENT_GROUPS = NAV_ITEMS.filter((group) => group.group !== 'Guide');

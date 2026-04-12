@@ -1,0 +1,71 @@
+/* ── Divider ─────────────────────────────────────────── */
+.orot-divider {
+  box-sizing: border-box;
+}
+
+/* horizontal */
+.orot-divider--horizontal {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin: var(--orot-space-4) 0;
+  gap: var(--orot-space-3);
+}
+
+.orot-divider--horizontal::before,
+.orot-divider--horizontal::after {
+  content: '';
+  flex: 1;
+  border-top: var(--orot-border-width) solid var(--orot-color-border);
+}
+
+.orot-divider--horizontal.orot-divider--dashed::before,
+.orot-divider--horizontal.orot-divider--dashed::after {
+  border-top-style: dashed;
+}
+
+/* label position */
+.orot-divider--label-left::before  { flex: 0 0 var(--orot-divider-orientation-margin, 16px); }
+.orot-divider--label-right::after  { flex: 0 0 var(--orot-divider-orientation-margin, 16px); }
+.orot-divider--no-label::before    { flex: 1; }
+.orot-divider--no-label::after     { display: none; }
+.orot-divider--no-label {
+  display: block;
+  border-top: var(--orot-border-width) solid var(--orot-color-border);
+  margin: var(--orot-space-4) 0;
+}
+.orot-divider--no-label.orot-divider--dashed {
+  border-top-style: dashed;
+}
+
+/* label */
+.orot-divider__label {
+  font-size: var(--orot-font-size-sm);
+  color: var(--orot-color-text-muted);
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.orot-divider--plain .orot-divider__label {
+  color: var(--orot-color-text-secondary);
+  font-weight: var(--orot-font-weight-regular);
+}
+
+/* vertical */
+.orot-divider--vertical {
+  display: inline-block;
+  width: var(--orot-border-width);
+  height: 1em;
+  background: var(--orot-color-border);
+  margin: 0 var(--orot-space-3);
+  vertical-align: middle;
+}
+
+.orot-divider--vertical.orot-divider--dashed {
+  background: none;
+  border-left: var(--orot-border-width) dashed var(--orot-color-border);
+}

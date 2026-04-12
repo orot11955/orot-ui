@@ -1,0 +1,103 @@
+.orot-drawer-root {
+  position: fixed;
+  inset: 0;
+  z-index: var(--orot-z-fixed);
+}
+
+.orot-drawer-mask {
+  position: absolute;
+  inset: 0;
+  background: var(--orot-overlay-bg);
+  animation: orot-drawer-mask-in var(--orot-transition-base) ease;
+}
+
+@keyframes orot-drawer-mask-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Drawer panel ─────────────────────────── */
+.orot-drawer {
+  position: absolute;
+  background: var(--orot-color-bg-container);
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--orot-shadow-lg);
+  transition: transform var(--orot-transition-base);
+}
+
+/* Placements */
+.orot-drawer--right {
+  top: 0; right: 0; bottom: 0;
+  transform: translateX(100%);
+}
+.orot-drawer--left {
+  top: 0; left: 0; bottom: 0;
+  transform: translateX(-100%);
+}
+.orot-drawer--top {
+  top: 0; left: 0; right: 0;
+  transform: translateY(-100%);
+}
+.orot-drawer--bottom {
+  bottom: 0; left: 0; right: 0;
+  transform: translateY(100%);
+}
+
+.orot-drawer--open {
+  transform: translate(0);
+}
+
+/* ── Header ───────────────────────────────── */
+.orot-drawer__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--orot-space-4) var(--orot-space-6);
+  border-bottom: var(--orot-border-width) solid var(--orot-color-border-secondary);
+}
+
+.orot-drawer__title {
+  font-size: var(--orot-font-size-lg);
+  font-weight: var(--orot-font-weight-bold);
+  color: var(--orot-color-text);
+  flex: 1;
+}
+
+.orot-drawer__header-extra {
+  display: flex;
+  align-items: center;
+  gap: var(--orot-space-2);
+}
+
+.orot-drawer__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--orot-color-text-secondary);
+  border-radius: var(--orot-radius-sm);
+  font-size: var(--orot-font-size-md);
+  transition: background var(--orot-transition-fast), color var(--orot-transition-fast);
+}
+.orot-drawer__close:hover {
+  background: var(--orot-color-fill-secondary);
+  color: var(--orot-color-text);
+}
+
+/* ── Body ─────────────────────────────────── */
+.orot-drawer__body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--orot-space-6);
+}
+
+/* ── Footer ───────────────────────────────── */
+.orot-drawer__footer {
+  padding: var(--orot-space-3) var(--orot-space-6);
+  border-top: var(--orot-border-width) solid var(--orot-color-border-secondary);
+}

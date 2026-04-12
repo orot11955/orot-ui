@@ -1,0 +1,9 @@
+.grid-cell {
+  background: var(--orot-color-bg-secondary);
+  border: 1px solid var(--orot-color-border);
+  border-radius: 2px;
+  padding: 8px 0;
+  text-align: center;
+  font-size: 12px;
+  color: var(--orot-color-text-secondary);
+}

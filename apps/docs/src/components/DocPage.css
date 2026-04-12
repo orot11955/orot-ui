@@ -1,0 +1,28 @@
+.doc-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--orot-space-10);
+}
+
+.doc-page__header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--orot-space-3);
+  padding-bottom: var(--orot-space-6);
+  border-bottom: var(--orot-border-width) solid var(--orot-color-border);
+}
+
+.doc-page__title {
+  margin: 0;
+  font-size: var(--orot-font-size-3xl);
+  font-weight: var(--orot-font-weight-bold);
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.doc-page__description {
+  margin: 0;
+  font-size: var(--orot-font-size-md);
+  color: var(--orot-color-text-secondary);
+  line-height: var(--orot-line-height-base);
+}

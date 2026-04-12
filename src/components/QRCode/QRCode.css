@@ -1,0 +1,83 @@
+.orot-qrcode {
+  display: inline-block;
+  width: max-content;
+}
+
+.orot-qrcode--bordered {
+  padding: var(--orot-space-3);
+  border: var(--orot-border-width) solid var(--orot-color-border-secondary);
+  border-radius: var(--orot-radius-md);
+}
+
+.orot-qrcode__canvas-wrap {
+  position: relative;
+  display: block;
+}
+
+.orot-qrcode__canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* ── Overlay ───────────────────────────────── */
+.orot-qrcode__overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--orot-color-bg-container) 90%, transparent);
+  backdrop-filter: blur(2px);
+  gap: var(--orot-space-2);
+}
+
+.orot-qrcode__spin {
+  width: 24px;
+  height: 24px;
+  border: 3px solid var(--orot-color-fill-secondary);
+  border-top-color: var(--orot-color-primary);
+  border-radius: var(--orot-radius-full);
+  animation: orot-qrcode-spin 0.8s linear infinite;
+}
+
+@keyframes orot-qrcode-spin {
+  to { transform: rotate(360deg); }
+}
+
+.orot-qrcode__expired-text {
+  color: var(--orot-color-text-secondary);
+  font-size: var(--orot-font-size-sm);
+}
+
+.orot-qrcode__refresh {
+  background: none;
+  border: none;
+  color: var(--orot-color-primary);
+  cursor: pointer;
+  font-size: var(--orot-font-size-sm);
+  font-family: var(--orot-font-family);
+  padding: 0;
+  text-decoration: underline;
+}
+
+.orot-qrcode__scanned-icon {
+  font-size: 32px;
+  color: var(--orot-color-success);
+}
+
+.orot-qrcode__scanned-text {
+  color: var(--orot-color-success);
+  font-size: var(--orot-font-size-sm);
+}
+
+/* ── Center icon ───────────────────────────── */
+.orot-qrcode__icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: var(--orot-radius-sm);
+  object-fit: contain;
+}

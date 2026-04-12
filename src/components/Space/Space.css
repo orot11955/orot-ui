@@ -1,0 +1,25 @@
+/* ── Space ───────────────────────────────────────────── */
+.orot-space {
+  display: inline-flex;
+  gap: var(--space-gap, var(--orot-space-2));
+}
+
+.orot-space--vertical    { flex-direction: column; }
+.orot-space--wrap        { flex-wrap: wrap; }
+.orot-space--block       { display: flex; width: 100%; }
+
+.orot-space--align-start    { align-items: flex-start; }
+.orot-space--align-end      { align-items: flex-end; }
+.orot-space--align-center   { align-items: center; }
+.orot-space--align-baseline { align-items: baseline; }
+
+.orot-space__item {
+  display: inline-flex;
+  align-items: inherit;
+}
+
+.orot-space__split {
+  display: inline-flex;
+  align-items: center;
+  color: var(--orot-color-border-strong);
+}

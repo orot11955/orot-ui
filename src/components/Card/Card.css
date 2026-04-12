@@ -1,0 +1,108 @@
+/* ── Card ────────────────────────────────────────────── */
+.orot-card {
+  background: var(--orot-color-bg);
+  border-radius: var(--orot-radius-md);
+  font-family: var(--orot-font-family);
+  font-size: var(--orot-font-size-md);
+  color: var(--orot-color-text);
+  position: relative;
+  transition: box-shadow var(--orot-transition-base);
+}
+
+.orot-card--bordered {
+  border: var(--orot-border-width) solid var(--orot-color-border);
+}
+
+.orot-card--hoverable:hover {
+  box-shadow: var(--orot-shadow-md);
+  cursor: pointer;
+}
+
+/* ── Header ──────────────────────────────────────────── */
+.orot-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--orot-space-4) var(--orot-space-5);
+  border-bottom: var(--orot-border-width) solid var(--orot-color-border);
+  gap: var(--orot-space-3);
+}
+
+.orot-card--sm .orot-card__head {
+  padding: var(--orot-space-3) var(--orot-space-4);
+}
+
+.orot-card__title {
+  font-weight: var(--orot-font-weight-medium);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.orot-card__extra {
+  flex-shrink: 0;
+  color: var(--orot-color-text-secondary);
+  font-size: var(--orot-font-size-sm);
+}
+
+/* ── Body ────────────────────────────────────────────── */
+.orot-card__body {
+  padding: var(--orot-space-5);
+}
+
+.orot-card--sm .orot-card__body {
+  padding: var(--orot-space-4);
+}
+
+/* ── Actions ─────────────────────────────────────────── */
+.orot-card__actions {
+  display: flex;
+  border-top: var(--orot-border-width) solid var(--orot-color-border);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.orot-card__actions-item {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--orot-space-3);
+  cursor: pointer;
+  color: var(--orot-color-text-secondary);
+  transition: color var(--orot-transition-fast), background var(--orot-transition-fast);
+  border-right: var(--orot-border-width) solid var(--orot-color-border);
+}
+
+.orot-card__actions-item:last-child { border-right: none; }
+.orot-card__actions-item:hover { color: var(--orot-color-text); background: var(--orot-color-bg-hover); }
+
+/* ── Loading skeleton ────────────────────────────────── */
+.orot-card__loading {
+  padding: var(--orot-space-5);
+}
+
+.orot-card__loading-block {
+  height: 14px;
+  background: linear-gradient(
+    90deg,
+    var(--orot-color-bg-secondary) 25%,
+    var(--orot-color-bg-tertiary) 37%,
+    var(--orot-color-bg-secondary) 63%
+  );
+  background-size: 400% 100%;
+  animation: orot-card-shimmer 1.4s ease infinite;
+  border-radius: var(--orot-radius-sm);
+  margin-bottom: var(--orot-space-3);
+}
+
+.orot-card__loading-block:last-child { margin-bottom: 0; }
+.orot-card__loading-block--short { width: 60%; }
+
+@keyframes orot-card-shimmer {
+  0%   { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}

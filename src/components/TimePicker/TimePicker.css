@@ -1,0 +1,118 @@
+.orot-timepicker {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+}
+
+.orot-timepicker__selector {
+  display: flex;
+  align-items: center;
+  gap: var(--orot-space-2);
+  border: var(--orot-border-width) solid var(--orot-color-border);
+  border-radius: var(--orot-radius-sm);
+  background: var(--orot-color-bg-container);
+  cursor: pointer;
+  padding: 0 var(--orot-space-3);
+  transition: border-color var(--orot-transition-fast), box-shadow var(--orot-transition-fast);
+}
+
+.orot-timepicker--sm .orot-timepicker__selector { height: var(--orot-size-sm); font-size: var(--orot-font-size-sm); }
+.orot-timepicker--md .orot-timepicker__selector { height: var(--orot-size-md); font-size: var(--orot-font-size-md); }
+.orot-timepicker--lg .orot-timepicker__selector { height: var(--orot-size-lg); font-size: var(--orot-font-size-lg); }
+
+.orot-timepicker--open .orot-timepicker__selector {
+  border-color: var(--orot-color-primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--orot-color-primary) 20%, transparent);
+}
+.orot-timepicker--error .orot-timepicker__selector { border-color: var(--orot-color-error); }
+.orot-timepicker--warning .orot-timepicker__selector { border-color: var(--orot-color-warning); }
+.orot-timepicker--disabled .orot-timepicker__selector { background: var(--orot-color-fill-tertiary); cursor: not-allowed; }
+
+.orot-timepicker__value { color: var(--orot-color-text); flex: 1; }
+.orot-timepicker__placeholder { color: var(--orot-color-text-quaternary); flex: 1; }
+
+.orot-timepicker__icons {
+  display: flex;
+  align-items: center;
+  gap: var(--orot-space-1);
+  margin-left: auto;
+}
+
+.orot-timepicker__clear {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--orot-color-text-quaternary);
+  font-size: var(--orot-font-size-sm);
+  padding: 0;
+}
+.orot-timepicker__clear:hover { color: var(--orot-color-text-secondary); }
+.orot-timepicker__icon { color: var(--orot-color-text-quaternary); font-size: 14px; }
+
+/* ── Dropdown ──────────────────────────────── */
+.orot-timepicker__dropdown {
+  background: var(--orot-color-bg-elevated);
+  border: var(--orot-border-width) solid var(--orot-color-border-secondary);
+  border-radius: var(--orot-radius-md);
+  box-shadow: var(--orot-shadow-md);
+  animation: orot-picker-in var(--orot-transition-fast) ease;
+}
+
+@keyframes orot-picker-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.orot-timepicker__columns {
+  display: flex;
+}
+
+.orot-timepicker__column {
+  width: 56px;
+  max-height: 224px;
+  overflow-y: auto;
+  border-right: var(--orot-border-width) solid var(--orot-color-border-secondary);
+  scrollbar-width: thin;
+}
+.orot-timepicker__column:last-child { border-right: none; }
+
+.orot-timepicker__cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 32px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: var(--orot-font-size-sm);
+  font-family: var(--orot-font-family);
+  color: var(--orot-color-text);
+  transition: background var(--orot-transition-fast);
+}
+.orot-timepicker__cell:hover { background: var(--orot-color-fill-secondary); }
+.orot-timepicker__cell--selected {
+  background: color-mix(in srgb, var(--orot-color-primary) 15%, transparent);
+  color: var(--orot-color-primary);
+  font-weight: var(--orot-font-weight-medium);
+}
+
+.orot-timepicker__footer {
+  border-top: var(--orot-border-width) solid var(--orot-color-border-secondary);
+  padding: var(--orot-space-2) var(--orot-space-3);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.orot-timepicker__ok-btn {
+  background: var(--orot-color-primary);
+  color: var(--orot-color-primary-text);
+  border: none;
+  border-radius: var(--orot-radius-sm);
+  padding: var(--orot-space-1) var(--orot-space-3);
+  cursor: pointer;
+  font-size: var(--orot-font-size-sm);
+  font-family: var(--orot-font-family);
+  transition: background var(--orot-transition-fast);
+}
+.orot-timepicker__ok-btn:hover { background: var(--orot-color-primary-hover); }

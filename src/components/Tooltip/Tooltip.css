@@ -1,0 +1,83 @@
+/* ── Tooltip wrapper ─────────────────────────────────── */
+.orot-tooltip-wrapper {
+  display: inline-flex;
+}
+
+/* ── Tooltip bubble ──────────────────────────────────── */
+.orot-tooltip {
+  padding: var(--orot-space-1) var(--orot-space-3);
+  background: var(--orot-tooltip-bg, var(--orot-color-primary));
+  color: var(--orot-color-primary-text);
+  border-radius: var(--orot-radius-sm);
+  font-family: var(--orot-font-family);
+  font-size: var(--orot-font-size-sm);
+  width: max-content;
+  max-width: min(300px, calc(100vw - 24px));
+  white-space: normal;
+  overflow-wrap: anywhere;
+  pointer-events: none;
+  animation: orot-tooltip-in var(--orot-transition-fast) ease;
+}
+
+@keyframes orot-tooltip-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* Placement classes are used for arrow direction only — actual position is inline style */
+
+/* ── Arrow ───────────────────────────────────────────── */
+.orot-tooltip::before {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 0;
+  border: 5px solid transparent;
+}
+
+.orot-tooltip--no-arrow::before {
+  display: none;
+}
+
+.orot-tooltip--top::before,
+.orot-tooltip--topLeft::before,
+.orot-tooltip--topRight::before {
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-top-color: var(--orot-tooltip-bg, var(--orot-color-primary));
+  border-bottom: none;
+}
+.orot-tooltip--topLeft::before  { left: var(--orot-space-4); transform: none; }
+.orot-tooltip--topRight::before { left: auto; right: var(--orot-space-4); transform: none; }
+
+.orot-tooltip--bottom::before,
+.orot-tooltip--bottomLeft::before,
+.orot-tooltip--bottomRight::before {
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-bottom-color: var(--orot-tooltip-bg, var(--orot-color-primary));
+  border-top: none;
+}
+.orot-tooltip--bottomLeft::before  { left: var(--orot-space-4); transform: none; }
+.orot-tooltip--bottomRight::before { left: auto; right: var(--orot-space-4); transform: none; }
+
+.orot-tooltip--left::before,
+.orot-tooltip--leftTop::before,
+.orot-tooltip--leftBottom::before {
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  border-left-color: var(--orot-tooltip-bg, var(--orot-color-primary));
+  border-right: none;
+}
+.orot-tooltip--right::before,
+.orot-tooltip--rightTop::before,
+.orot-tooltip--rightBottom::before {
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  border-right-color: var(--orot-tooltip-bg, var(--orot-color-primary));
+  border-left: none;
+}

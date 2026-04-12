@@ -1,0 +1,48 @@
+.icon-page__catalog {
+  display: grid;
+  gap: var(--orot-space-8);
+  width: 100%;
+  min-width: 0;
+}
+
+.icon-page__section {
+  min-width: 0;
+}
+
+.icon-page__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: var(--orot-space-3);
+  width: 100%;
+}
+
+.icon-page__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--orot-space-2);
+  padding: var(--orot-space-3);
+  min-height: 5.75rem;
+  border: var(--orot-border-width) solid var(--orot-color-border);
+  border-radius: var(--orot-radius-md);
+  cursor: default;
+  background: color-mix(in srgb, var(--orot-color-bg-secondary) 46%, transparent);
+  transition:
+    background var(--orot-transition-fast),
+    border-color var(--orot-transition-fast),
+    transform var(--orot-transition-fast);
+}
+
+.icon-page__item:hover {
+  background: var(--orot-color-bg-secondary);
+  border-color: color-mix(in srgb, var(--orot-color-primary) 28%, var(--orot-color-border));
+  transform: translateY(-1px);
+}
+
+.icon-page__name {
+  font-size: var(--orot-font-size-xs);
+  color: var(--orot-color-text-muted);
+  text-align: center;
+  line-height: 1.4;
+  word-break: break-word;
+}

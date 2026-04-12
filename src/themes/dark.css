@@ -1,0 +1,61 @@
+/* orot-ui dark theme
+   컨셉: 터미널/코드 에디터 — 어둠 속의 형광 텍스트 */
+
+[data-orot-theme="dark"] {
+  color-scheme: dark;
+
+  /* Background */
+  --orot-color-bg:            #141414;
+  --orot-color-bg-secondary:  #1e1e1e;
+  --orot-color-bg-tertiary:   #282828;
+  --orot-color-bg-hover:      #2e2e2e;
+  --orot-color-bg-active:     #383838;
+  --orot-color-bg-container:  #1e1e1e;
+  --orot-color-bg-elevated:   #2a2a2a;
+
+  /* Fill */
+  --orot-color-fill-primary:   rgba(255, 255, 255, 0.18);
+  --orot-color-fill-secondary: rgba(255, 255, 255, 0.08);
+  --orot-color-fill-tertiary:  rgba(255, 255, 255, 0.04);
+
+  /* Border */
+  --orot-color-border:          #323232;
+  --orot-color-border-secondary:#2a2a2a;
+  --orot-color-border-strong:   #555555;
+  --orot-color-border-focus:    #aaaaaa;
+
+  /* Text */
+  --orot-color-text:            #e8e8e8;
+  --orot-color-text-secondary:  #aaaaaa;
+  --orot-color-text-muted:      #666666;
+  --orot-color-text-quaternary: #4a4a4a;
+  --orot-color-text-disabled:   #444444;
+  --orot-color-text-inverse:    #141414;
+
+  /* Primary */
+  --orot-color-primary:       #e8e8e8;
+  --orot-color-primary-hover: #ffffff;
+  --orot-color-primary-active:#cccccc;
+  --orot-color-primary-bg:    #2e2e2e;
+  --orot-color-primary-text:  #141414;
+
+  /* Semantic */
+  --orot-color-error:         #ff6b6b;
+  --orot-color-danger:        #ff6b6b;
+  --orot-color-danger-hover:  #ff8888;
+  --orot-color-danger-bg:     #2a1a1a;
+  --orot-color-success:       #4ade80;
+  --orot-color-success-bg:    #0f2a1a;
+  --orot-color-warning:       #fbbf24;
+  --orot-color-warning-bg:    #2a2000;
+  --orot-color-info:          #60a5fa;
+  --orot-color-info-bg:       #0f1e35;
+
+  /* Shadow */
+  --orot-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --orot-shadow-md: 0 2px 8px rgba(0, 0, 0, 0.5);
+  --orot-shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.6);
+
+  /* Overlay */
+  --orot-overlay-bg: rgba(0, 0, 0, 0.65);
+}

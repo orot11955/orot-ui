@@ -1,0 +1,220 @@
+/* ── Button base ─────────────────────────────────────── */
+.orot-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--orot-space-2);
+  min-width: 0;
+  border: var(--orot-border-width) solid transparent;
+  border-radius: var(--orot-radius-sm);
+  font-family: var(--orot-font-family);
+  font-weight: var(--orot-font-weight-medium);
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+  line-height: 1;
+  text-decoration: none;
+  vertical-align: middle;
+  transition:
+    background var(--orot-transition-fast),
+    color var(--orot-transition-fast),
+    border-color var(--orot-transition-fast),
+    opacity var(--orot-transition-fast);
+}
+
+.orot-btn--round {
+  border-radius: var(--orot-radius-full);
+}
+
+.orot-btn--circle {
+  border-radius: var(--orot-radius-full);
+}
+
+/* ── Sizes ───────────────────────────────────────────── */
+.orot-btn--sm {
+  height: var(--orot-size-sm);
+  padding: 0 var(--orot-space-3);
+  font-size: var(--orot-font-size-sm);
+}
+
+.orot-btn--md {
+  height: var(--orot-size-md);
+  padding: 0 var(--orot-space-4);
+  font-size: var(--orot-font-size-md);
+}
+
+.orot-btn--lg {
+  height: var(--orot-size-lg);
+  padding: 0 var(--orot-space-5);
+  font-size: var(--orot-font-size-lg);
+}
+
+/* ── Variants ────────────────────────────────────────── */
+/* solid */
+.orot-btn--solid {
+  background: var(--orot-color-primary);
+  color: var(--orot-color-primary-text);
+  border-color: var(--orot-color-primary);
+}
+.orot-btn--solid:hover:not(:disabled) {
+  background: var(--orot-color-primary-hover);
+  border-color: var(--orot-color-primary-hover);
+}
+.orot-btn--solid:active:not(:disabled) {
+  background: var(--orot-color-primary-active);
+  border-color: var(--orot-color-primary-active);
+}
+
+/* outlined */
+.orot-btn--outlined {
+  background: transparent;
+  color: var(--orot-color-text);
+  border-color: var(--orot-color-border-strong);
+}
+.orot-btn--outlined:hover:not(:disabled) {
+  border-color: var(--orot-color-primary);
+  color: var(--orot-color-primary);
+}
+.orot-btn--outlined:active:not(:disabled) {
+  background: var(--orot-color-bg-hover);
+}
+
+/* text */
+.orot-btn--text {
+  background: transparent;
+  color: var(--orot-color-text);
+  border-color: transparent;
+}
+.orot-btn--text:hover:not(:disabled) {
+  background: var(--orot-color-bg-hover);
+}
+.orot-btn--text:active:not(:disabled) {
+  background: var(--orot-color-bg-active);
+}
+
+/* link */
+.orot-btn--link {
+  background: transparent;
+  color: var(--orot-color-text);
+  border-color: transparent;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--orot-color-border-strong);
+  height: auto;
+  padding: 0;
+}
+.orot-btn--link:hover:not(:disabled) {
+  text-decoration-color: var(--orot-color-text);
+}
+
+/* ── Danger ──────────────────────────────────────────── */
+.orot-btn--danger.orot-btn--solid {
+  background: var(--orot-color-danger);
+  border-color: var(--orot-color-danger);
+  color: #fff;
+}
+.orot-btn--danger.orot-btn--solid:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--orot-color-danger) 80%, #000);
+  border-color: color-mix(in srgb, var(--orot-color-danger) 80%, #000);
+}
+
+.orot-btn--danger.orot-btn--outlined {
+  color: var(--orot-color-danger);
+  border-color: var(--orot-color-danger);
+  background: transparent;
+}
+.orot-btn--danger.orot-btn--outlined:hover:not(:disabled) {
+  background: var(--orot-color-danger-bg);
+}
+
+.orot-btn--danger.orot-btn--text,
+.orot-btn--danger.orot-btn--link {
+  color: var(--orot-color-danger);
+}
+.orot-btn--danger.orot-btn--text:hover:not(:disabled) {
+  background: var(--orot-color-danger-bg);
+}
+
+/* ── Ghost ───────────────────────────────────────────── */
+/* ghost = 어두운/컬러 배경 위에 올리는 용도. 흰 텍스트/테두리 사용 */
+.orot-btn--ghost {
+  background: transparent !important;
+}
+.orot-btn--ghost.orot-btn--solid {
+  color: #fff;
+  border-color: #fff;
+}
+.orot-btn--ghost.orot-btn--solid:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.15) !important;
+  border-color: rgba(255, 255, 255, 0.85);
+  color: rgba(255, 255, 255, 0.85);
+}
+.orot-btn--ghost.orot-btn--outlined {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.65);
+}
+.orot-btn--ghost.orot-btn--outlined:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.15) !important;
+  border-color: #fff;
+  color: #fff;
+}
+.orot-btn--ghost.orot-btn--text,
+.orot-btn--ghost.orot-btn--link {
+  color: #fff;
+}
+.orot-btn--ghost.orot-btn--text:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.15) !important;
+}
+.orot-btn--ghost.orot-btn--danger {
+  color: var(--orot-color-danger);
+  border-color: var(--orot-color-danger);
+}
+.orot-btn--ghost.orot-btn--danger:hover:not(:disabled) {
+  background: var(--orot-color-danger-bg) !important;
+}
+
+/* ── States ──────────────────────────────────────────── */
+.orot-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.38;
+}
+
+.orot-btn--block {
+  width: 100%;
+}
+
+.orot-btn--icon-only.orot-btn--sm { width: var(--orot-size-sm); padding: 0; }
+.orot-btn--icon-only.orot-btn--md { width: var(--orot-size-md); padding: 0; }
+.orot-btn--icon-only.orot-btn--lg { width: var(--orot-size-lg); padding: 0; }
+.orot-btn--circle.orot-btn--sm { min-width: var(--orot-size-sm); padding-inline: 0; }
+.orot-btn--circle.orot-btn--md { min-width: var(--orot-size-md); padding-inline: 0; }
+.orot-btn--circle.orot-btn--lg { min-width: var(--orot-size-lg); padding-inline: 0; }
+
+/* ── Icon ────────────────────────────────────────────── */
+.orot-btn__icon {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.orot-btn__label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Loading spinner ─────────────────────────────────── */
+.orot-btn__spinner {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  border: 1.5px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: orot-btn-spin 0.55s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes orot-btn-spin {
+  to { transform: rotate(360deg); }
+}

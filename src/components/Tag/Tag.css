@@ -1,0 +1,88 @@
+/* ── Tag ─────────────────────────────────────────────── */
+.orot-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--orot-space-1);
+  max-width: 100%;
+  padding: 1px var(--orot-space-2);
+  font-family: var(--orot-font-family);
+  font-size: var(--orot-font-size-sm);
+  line-height: var(--orot-line-height-base);
+  border-radius: var(--orot-radius-sm);
+  white-space: nowrap;
+  background: var(--orot-color-bg-tertiary);
+  color: var(--orot-color-text-secondary);
+  border: var(--orot-border-width) solid transparent;
+}
+
+.orot-tag__icon {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.orot-tag__label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.orot-tag--bordered {
+  border-color: var(--orot-color-border);
+}
+
+.orot-tag--checkable {
+  cursor: pointer;
+  background: transparent;
+}
+
+.orot-tag--checkable:hover {
+  border-color: var(--orot-color-border);
+  background: var(--orot-color-bg-hover);
+}
+
+.orot-tag--checked {
+  background: var(--orot-color-primary);
+  color: var(--orot-color-primary-text);
+}
+
+/* Semantic colors */
+.orot-tag--success {
+  background: var(--orot-color-success-bg);
+  color: var(--orot-color-success);
+}
+.orot-tag--success.orot-tag--bordered { border-color: var(--orot-color-success); }
+
+.orot-tag--warning {
+  background: var(--orot-color-warning-bg);
+  color: var(--orot-color-warning);
+}
+.orot-tag--warning.orot-tag--bordered { border-color: var(--orot-color-warning); }
+
+.orot-tag--error {
+  background: var(--orot-color-danger-bg);
+  color: var(--orot-color-danger);
+}
+.orot-tag--error.orot-tag--bordered { border-color: var(--orot-color-danger); }
+
+.orot-tag--info {
+  background: var(--orot-color-info-bg);
+  color: var(--orot-color-info);
+}
+.orot-tag--info.orot-tag--bordered { border-color: var(--orot-color-info); }
+
+/* ── Close button ────────────────────────────────────── */
+.orot-tag__close {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 10px;
+  color: inherit;
+  opacity: 0.7;
+  line-height: 1;
+  transition: opacity var(--orot-transition-fast);
+}
+.orot-tag__close:hover { opacity: 1; }

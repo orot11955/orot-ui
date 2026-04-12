@@ -1,0 +1,178 @@
+/* ── Dropdown wrapper ────────────────────────────────── */
+.orot-dropdown {
+  position: relative;
+  display: inline-flex;
+  min-width: 0;
+}
+
+/* Portal container — rendered at document.body, must not affect layout */
+.orot-dropdown__menu-portal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  z-index: var(--orot-z-dropdown);
+  pointer-events: none;
+}
+
+.orot-dropdown__menu-portal > * {
+  pointer-events: auto;
+}
+
+/* ── Menu popup ──────────────────────────────────────── */
+.orot-dropdown__menu {
+  background: var(--orot-color-bg);
+  border: var(--orot-border-width) solid var(--orot-color-border);
+  border-radius: var(--orot-radius-md);
+  box-shadow: var(--orot-shadow-md);
+  min-width: 160px;
+  max-width: min(320px, calc(100vw - 32px));
+  padding: var(--orot-space-1) 0;
+  list-style: none;
+  margin: 0;
+  overflow: hidden;
+  /* animation */
+  transform-origin: top left;
+  animation: orot-dropdown-in var(--orot-transition-fast) ease;
+}
+
+.orot-dropdown__menu--hidden {
+  display: none;
+}
+
+.orot-dropdown__menu--context {
+  transform-origin: top left;
+}
+
+@keyframes orot-dropdown-in {
+  from { opacity: 0; transform: scale(0.95) translateY(-4px); }
+  to   { opacity: 1; transform: scale(1)    translateY(0); }
+}
+
+/* placement transform-origins (actual positioning is handled via inline style from portal) */
+.orot-dropdown__menu--bottom      { transform-origin: top left; }
+.orot-dropdown__menu--bottomLeft  { transform-origin: top left; }
+.orot-dropdown__menu--bottomRight { transform-origin: top right; }
+.orot-dropdown__menu--top         { transform-origin: bottom left; }
+.orot-dropdown__menu--topLeft     { transform-origin: bottom left; }
+.orot-dropdown__menu--topRight    { transform-origin: bottom right; }
+
+.orot-dropdown__menu--arrow::before {
+  content: '';
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: var(--orot-color-bg);
+  border-top: var(--orot-border-width) solid var(--orot-color-border);
+  border-left: var(--orot-border-width) solid var(--orot-color-border);
+  transform: rotate(45deg);
+}
+
+.orot-dropdown__menu--bottom.orot-dropdown__menu--arrow::before,
+.orot-dropdown__menu--bottomLeft.orot-dropdown__menu--arrow::before,
+.orot-dropdown__menu--bottomRight.orot-dropdown__menu--arrow::before {
+  top: -5px;
+}
+
+.orot-dropdown__menu--bottom.orot-dropdown__menu--arrow::before,
+.orot-dropdown__menu--top.orot-dropdown__menu--arrow::before {
+  left: calc(50% - 4px);
+}
+
+.orot-dropdown__menu--bottomLeft.orot-dropdown__menu--arrow::before,
+.orot-dropdown__menu--topLeft.orot-dropdown__menu--arrow::before {
+  left: var(--orot-space-4);
+}
+
+.orot-dropdown__menu--bottomRight.orot-dropdown__menu--arrow::before,
+.orot-dropdown__menu--topRight.orot-dropdown__menu--arrow::before {
+  right: var(--orot-space-4);
+}
+
+.orot-dropdown__menu--top.orot-dropdown__menu--arrow::before,
+.orot-dropdown__menu--topLeft.orot-dropdown__menu--arrow::before,
+.orot-dropdown__menu--topRight.orot-dropdown__menu--arrow::before {
+  bottom: -5px;
+  transform: rotate(225deg);
+}
+
+/* ── Menu item ───────────────────────────────────────── */
+.orot-dropdown__item {
+  display: flex;
+  align-items: center;
+  gap: var(--orot-space-2);
+  padding: var(--orot-space-2) var(--orot-space-4);
+  font-family: var(--orot-font-family);
+  font-size: var(--orot-font-size-md);
+  color: var(--orot-color-text);
+  cursor: pointer;
+  transition: background var(--orot-transition-fast);
+  list-style: none;
+}
+
+.orot-dropdown__item-label {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.orot-dropdown__item:hover:not(.orot-dropdown__item--disabled) {
+  background: var(--orot-color-bg-hover);
+}
+
+.orot-dropdown__item--danger {
+  color: var(--orot-color-danger);
+}
+
+.orot-dropdown__item--disabled {
+  color: var(--orot-color-text-disabled);
+  cursor: not-allowed;
+}
+
+.orot-dropdown__item-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  width: 16px;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Divider ─────────────────────────────────────────── */
+.orot-dropdown__divider {
+  height: var(--orot-border-width);
+  background: var(--orot-color-border);
+  margin: var(--orot-space-1) 0;
+  list-style: none;
+}
+
+/* ── Submenu ─────────────────────────────────────────── */
+.orot-dropdown__submenu {
+  position: relative;
+}
+
+.orot-dropdown__submenu-arrow {
+  margin-left: auto;
+  font-size: var(--orot-font-size-xs);
+  color: var(--orot-color-text-muted);
+}
+
+.orot-dropdown__submenu-list {
+  position: absolute;
+  left: 100%;
+  top: -4px;
+  z-index: var(--orot-z-dropdown);
+  background: var(--orot-color-bg);
+  border: var(--orot-border-width) solid var(--orot-color-border);
+  border-radius: var(--orot-radius-md);
+  box-shadow: var(--orot-shadow-md);
+  min-width: 160px;
+  max-width: min(320px, calc(100vw - 32px));
+  padding: var(--orot-space-1) 0;
+  list-style: none;
+  margin: 0;
+  display: none;
+}
+
+.orot-dropdown__submenu:hover .orot-dropdown__submenu-list {
+  display: block;
+}

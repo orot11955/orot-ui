@@ -1,0 +1,82 @@
+.orot-segmented {
+  display: inline-flex;
+  background: var(--orot-color-fill-tertiary);
+  border-radius: var(--orot-radius-sm);
+  padding: 2px;
+  gap: 2px;
+}
+
+.orot-segmented--block {
+  display: flex;
+  width: 100%;
+}
+
+.orot-segmented--disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* ── Sizes ─────────────────────────────────── */
+.orot-segmented--sm .orot-segmented__item {
+  height: calc(var(--orot-size-sm) - 4px);
+  padding: 0 var(--orot-space-2);
+  font-size: var(--orot-font-size-sm);
+}
+
+.orot-segmented--md .orot-segmented__item {
+  height: calc(var(--orot-size-md) - 4px);
+  padding: 0 var(--orot-space-3);
+  font-size: var(--orot-font-size-md);
+}
+
+.orot-segmented--lg .orot-segmented__item {
+  height: calc(var(--orot-size-lg) - 4px);
+  padding: 0 var(--orot-space-4);
+  font-size: var(--orot-font-size-lg);
+}
+
+/* ── Item ───────────────────────────────────── */
+.orot-segmented__item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--orot-space-1);
+  border: none;
+  border-radius: calc(var(--orot-radius-sm) - 2px);
+  background: transparent;
+  color: var(--orot-color-text-secondary);
+  font-family: var(--orot-font-family);
+  font-weight: var(--orot-font-weight-normal);
+  cursor: pointer;
+  transition:
+    background var(--orot-transition-fast),
+    color var(--orot-transition-fast),
+    box-shadow var(--orot-transition-fast);
+  white-space: nowrap;
+}
+
+.orot-segmented--block .orot-segmented__item {
+  flex: 1;
+}
+
+.orot-segmented__item:hover:not(.orot-segmented__item--disabled):not(.orot-segmented__item--selected) {
+  background: color-mix(in srgb, var(--orot-color-bg-container) 60%, transparent);
+  color: var(--orot-color-text);
+}
+
+.orot-segmented__item--selected {
+  background: var(--orot-color-bg-container);
+  color: var(--orot-color-text);
+  font-weight: var(--orot-font-weight-medium);
+  box-shadow: var(--orot-shadow-sm);
+}
+
+.orot-segmented__item--disabled {
+  color: var(--orot-color-text-disabled);
+  cursor: not-allowed;
+}
+
+.orot-segmented__icon {
+  display: inline-flex;
+  align-items: center;
+}

@@ -1,0 +1,63 @@
+/* ── Popconfirm wrapper ──────────────────────────────── */
+.orot-popconfirm-wrapper {
+  display: inline-flex;
+  min-width: 0;
+}
+
+/* ── Popconfirm bubble ───────────────────────────────── */
+.orot-popconfirm {
+  background: var(--orot-color-bg);
+  border: var(--orot-border-width) solid var(--orot-color-border);
+  border-radius: var(--orot-radius-md);
+  box-shadow: var(--orot-shadow-md);
+  padding: var(--orot-space-3) var(--orot-space-4);
+  min-width: 200px;
+  max-width: min(320px, calc(100vw - 24px));
+  font-family: var(--orot-font-family);
+  font-size: var(--orot-font-size-sm);
+  animation: orot-popconfirm-in var(--orot-transition-fast) ease;
+}
+
+@keyframes orot-popconfirm-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* Placement classes kept for arrow styling; actual position is via inline style */
+
+/* ── Content ─────────────────────────────────────────── */
+.orot-popconfirm__content {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--orot-space-2);
+  margin-bottom: var(--orot-space-3);
+  color: var(--orot-color-text);
+}
+
+.orot-popconfirm__icon {
+  flex-shrink: 0;
+  color: var(--orot-color-warning);
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.orot-popconfirm__text {}
+
+.orot-popconfirm__title {
+  font-weight: var(--orot-font-weight-medium);
+  color: var(--orot-color-text);
+}
+
+.orot-popconfirm__description {
+  color: var(--orot-color-text-secondary);
+  margin-top: var(--orot-space-1);
+  font-size: var(--orot-font-size-sm);
+  overflow-wrap: anywhere;
+}
+
+/* ── Buttons ─────────────────────────────────────────── */
+.orot-popconfirm__buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--orot-space-2);
+}

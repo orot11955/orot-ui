@@ -1,0 +1,61 @@
+/* orot-ui forest theme
+   컨셉: 이른 아침 숲속 — 이끼 초록과 흙냄새 나는 따뜻한 갈색 */
+
+[data-orot-theme="forest"] {
+  color-scheme: dark;
+
+  /* Background */
+  --orot-color-bg:            #0e1a12;
+  --orot-color-bg-secondary:  #132019;
+  --orot-color-bg-tertiary:   #1a2a20;
+  --orot-color-bg-hover:      #1e3226;
+  --orot-color-bg-active:     #243a2c;
+  --orot-color-bg-container:  #132019;
+  --orot-color-bg-elevated:   #1a2a20;
+
+  /* Fill */
+  --orot-color-fill-primary:   rgba(106, 191, 122, 0.22);
+  --orot-color-fill-secondary: rgba(106, 191, 122, 0.09);
+  --orot-color-fill-tertiary:  rgba(106, 191, 122, 0.04);
+
+  /* Border */
+  --orot-color-border:          #243a2c;
+  --orot-color-border-secondary:#1e3226;
+  --orot-color-border-strong:   #3a5c44;
+  --orot-color-border-focus:    #6abf7a;
+
+  /* Text */
+  --orot-color-text:            #d4e8d8;
+  --orot-color-text-secondary:  #80b890;
+  --orot-color-text-muted:      #4a7a58;
+  --orot-color-text-quaternary: #2e5438;
+  --orot-color-text-disabled:   #2a4a34;
+  --orot-color-text-inverse:    #0e1a12;
+
+  /* Primary */
+  --orot-color-primary:       #6abf7a;
+  --orot-color-primary-hover: #88cc96;
+  --orot-color-primary-active:#4aac5e;
+  --orot-color-primary-bg:    #1e3226;
+  --orot-color-primary-text:  #0e1a12;
+
+  /* Semantic */
+  --orot-color-error:         #f08080;
+  --orot-color-danger:        #f08080;
+  --orot-color-danger-hover:  #f5a0a0;
+  --orot-color-danger-bg:     #2a1818;
+  --orot-color-success:       #6abf7a;
+  --orot-color-success-bg:    #152218;
+  --orot-color-warning:       #d4a040;
+  --orot-color-warning-bg:    #221c0a;
+  --orot-color-info:          #70b8d4;
+  --orot-color-info-bg:       #101e28;
+
+  /* Shadow */
+  --orot-shadow-sm: 0 1px 3px rgba(0, 10, 5, 0.5);
+  --orot-shadow-md: 0 2px 8px rgba(0, 10, 5, 0.6);
+  --orot-shadow-lg: 0 4px 16px rgba(0, 10, 5, 0.7);
+
+  /* Overlay */
+  --orot-overlay-bg: rgba(5, 15, 8, 0.7);
+}

@@ -1,0 +1,67 @@
+/* ── Breadcrumb ──────────────────────────────────────── */
+.orot-breadcrumb {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  font-family: var(--orot-font-family);
+  font-size: var(--orot-font-size-sm);
+  color: var(--orot-color-text-secondary);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.orot-breadcrumb__list {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.orot-breadcrumb__item {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.orot-breadcrumb__link {
+  color: var(--orot-color-text-secondary);
+  cursor: pointer;
+  transition: color var(--orot-transition-fast);
+  text-decoration: none;
+  min-width: 0;
+}
+
+.orot-breadcrumb__link:hover {
+  color: var(--orot-color-text);
+}
+
+.orot-breadcrumb__current {
+  color: var(--orot-color-text);
+}
+
+.orot-breadcrumb__separator {
+  margin: 0 var(--orot-space-2);
+  color: var(--orot-color-text-muted);
+  user-select: none;
+}
+
+.orot-breadcrumb__dropdown-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--orot-space-1);
+  padding: 0;
+  border: none;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.orot-breadcrumb__menu-arrow {
+  color: var(--orot-color-text-muted);
+  font-size: 10px;
+}

@@ -1,0 +1,114 @@
+.orot-carousel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  width: 100%;
+}
+
+.orot-carousel--dots-top {
+  flex-direction: column-reverse;
+}
+
+.orot-carousel--vertical-dots {
+  flex-direction: row;
+}
+
+.orot-carousel--dots-right.orot-carousel--vertical-dots {
+  flex-direction: row-reverse;
+}
+
+/* ── Track wrap ────────────────────────────── */
+.orot-carousel__track-wrap {
+  position: relative;
+  overflow: hidden;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.orot-carousel__track {
+  display: flex;
+  will-change: transform;
+}
+
+/* ── Slide ─────────────────────────────────── */
+.orot-carousel__slide {
+  flex: 0 0 100%;
+  min-width: 0;
+}
+
+.orot-carousel__slide--fade {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.orot-carousel__slide--fade.orot-carousel__slide--active {
+  position: relative;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ── Arrows ────────────────────────────────── */
+.orot-carousel__arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: rgba(0, 0, 0, 0.3);
+  color: #fff;
+  border: none;
+  border-radius: var(--orot-radius-full);
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 1;
+  transition: background var(--orot-transition-fast);
+}
+
+.orot-carousel__arrow:hover { background: rgba(0, 0, 0, 0.5); }
+
+.orot-carousel__arrow--prev { left: var(--orot-space-3); }
+.orot-carousel__arrow--next { right: var(--orot-space-3); }
+
+/* ── Dots ──────────────────────────────────── */
+.orot-carousel__dots {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: var(--orot-space-1);
+  padding: var(--orot-space-2) 0;
+}
+
+.orot-carousel--dots-left .orot-carousel__dots,
+.orot-carousel--dots-right .orot-carousel__dots {
+  flex-direction: column;
+  padding: 0 var(--orot-space-2);
+}
+
+.orot-carousel__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--orot-radius-full);
+  background: var(--orot-color-fill-secondary);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: background var(--orot-transition-fast), width var(--orot-transition-fast);
+}
+
+.orot-carousel__dot--active {
+  background: var(--orot-color-primary);
+  width: 16px;
+}
+
+.orot-carousel--dots-left .orot-carousel__dot--active,
+.orot-carousel--dots-right .orot-carousel__dot--active {
+  width: 6px;
+  height: 16px;
+}

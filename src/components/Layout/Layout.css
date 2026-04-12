@@ -1,0 +1,120 @@
+/* ── Layout ──────────────────────────────────────────── */
+.orot-layout {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.orot-layout--has-sider {
+  flex-direction: row;
+}
+
+/* ── Header ──────────────────────────────────────────── */
+.orot-layout-header {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  height: 48px;
+  padding: 0 var(--orot-space-4);
+  background: var(--orot-color-bg);
+  border-bottom: var(--orot-border-width) solid var(--orot-color-border);
+  box-sizing: border-box;
+}
+
+/* ── Sider ───────────────────────────────────────────── */
+.orot-layout-sider {
+  position: relative;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--orot-color-bg-secondary);
+  border-right: var(--orot-border-width) solid var(--orot-color-border);
+  transition: width var(--orot-transition-slow);
+  overflow: hidden;
+  box-sizing: border-box;
+  min-height: 0;
+}
+
+.orot-layout-sider--dark {
+  background: var(--orot-color-bg-tertiary);
+}
+
+.orot-layout-sider--zero-width {
+  overflow: visible;
+  border-right: none;
+}
+
+.orot-layout-sider__content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: var(--orot-space-4);
+}
+
+.orot-layout-sider--collapsed .orot-layout-sider__content {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.orot-layout-sider__trigger {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  border-top: var(--orot-border-width) solid var(--orot-color-border);
+  cursor: pointer;
+  background: none;
+  border-left: none;
+  border-right: none;
+  border-bottom: none;
+  font-family: var(--orot-font-family);
+  font-size: var(--orot-font-size-md);
+  color: var(--orot-color-text-secondary);
+  width: 100%;
+  transition: background var(--orot-transition-fast), color var(--orot-transition-fast);
+}
+
+.orot-layout-sider__trigger--zero-width {
+  /* left: 100% = 항상 사이더 오른쪽 끝에 위치 (width=0일 때도 올바르게 배치) */
+  position: absolute;
+  top: var(--orot-space-4);
+  left: 100%;
+  width: 32px;
+  height: 32px;
+  border: var(--orot-border-width) solid var(--orot-color-border);
+  border-radius: var(--orot-radius-sm);
+  background: var(--orot-color-bg);
+  z-index: 1;
+}
+
+.orot-layout-sider__trigger:hover {
+  background: var(--orot-color-bg-hover);
+  color: var(--orot-color-text);
+}
+
+/* ── Content ─────────────────────────────────────────── */
+.orot-layout-content {
+  flex: 1;
+  overflow: auto;
+  padding: var(--orot-space-6);
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* ── Footer ──────────────────────────────────────────── */
+.orot-layout-footer {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  padding: var(--orot-space-4);
+  border-top: var(--orot-border-width) solid var(--orot-color-border);
+  color: var(--orot-color-text-secondary);
+  font-size: var(--orot-font-size-sm);
+  box-sizing: border-box;
+}

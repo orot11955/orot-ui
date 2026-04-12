@@ -1,0 +1,66 @@
+.orot-message-container {
+  position: fixed;
+  top: var(--orot-space-5);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1050;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--orot-space-2);
+  pointer-events: none;
+}
+
+/* ── Message item ──────────────────────────── */
+.orot-message {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--orot-space-2);
+  padding: var(--orot-space-2) var(--orot-space-4);
+  background: var(--orot-color-bg-elevated);
+  border: var(--orot-border-width) solid var(--orot-color-border-secondary);
+  border-radius: var(--orot-radius-md);
+  box-shadow: var(--orot-shadow-md);
+  font-family: var(--orot-font-family);
+  font-size: var(--orot-font-size-md);
+  color: var(--orot-color-text);
+  pointer-events: auto;
+  white-space: nowrap;
+  animation: orot-message-in var(--orot-transition-fast) ease;
+}
+
+@keyframes orot-message-in {
+  from { opacity: 0; transform: translateY(-8px) scale(0.95); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.orot-message__icon { font-size: 16px; line-height: 1; }
+.orot-message__content { line-height: 1.4; }
+
+.orot-message__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: var(--orot-space-1);
+  width: 18px;
+  height: 18px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--orot-color-text-muted);
+  border-radius: var(--orot-radius-sm);
+  font-size: 12px;
+  line-height: 1;
+  padding: 0;
+  transition: background var(--orot-transition-fast), color var(--orot-transition-fast);
+}
+.orot-message__close:hover {
+  background: var(--orot-color-fill-secondary);
+  color: var(--orot-color-text);
+}
+
+/* ── Type variants ─────────────────────────── */
+.orot-message--success .orot-message__content { color: var(--orot-color-success, #52c41a); }
+.orot-message--info    .orot-message__content { color: var(--orot-color-primary); }
+.orot-message--warning .orot-message__content { color: var(--orot-color-warning); }
+.orot-message--error   .orot-message__content { color: var(--orot-color-error); }

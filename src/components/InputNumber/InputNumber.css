@@ -1,0 +1,145 @@
+.orot-input-number-wrapper {
+  display: inline-flex;
+  align-items: stretch;
+}
+
+.orot-input-number__addon {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 var(--orot-space-3);
+  background: var(--orot-color-fill-tertiary);
+  border: var(--orot-border-width) solid var(--orot-color-border);
+  color: var(--orot-color-text-secondary);
+  font-size: var(--orot-font-size-md);
+  white-space: nowrap;
+}
+
+.orot-input-number__addon-before {
+  border-right: none;
+  border-radius: var(--orot-radius-sm) 0 0 var(--orot-radius-sm);
+}
+
+.orot-input-number__addon-after {
+  border-left: none;
+  border-radius: 0 var(--orot-radius-sm) var(--orot-radius-sm) 0;
+}
+
+/* ── Affix wrapper ─────────────────────────── */
+.orot-input-number__affix {
+  display: inline-flex;
+  align-items: center;
+  border: var(--orot-border-width) solid var(--orot-color-border);
+  border-radius: var(--orot-radius-sm);
+  background: var(--orot-color-bg-container);
+  transition: border-color var(--orot-transition-fast), box-shadow var(--orot-transition-fast);
+  overflow: hidden;
+}
+
+.orot-input-number-wrapper > .orot-input-number__addon-before + .orot-input-number__affix {
+  border-radius: 0 var(--orot-radius-sm) var(--orot-radius-sm) 0;
+}
+.orot-input-number-wrapper:has(.orot-input-number__addon-after) > .orot-input-number__affix {
+  border-radius: var(--orot-radius-sm) 0 0 var(--orot-radius-sm);
+}
+
+.orot-input-number__affix--focused {
+  border-color: var(--orot-color-primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--orot-color-primary) 20%, transparent);
+}
+
+.orot-input-number__affix--error {
+  border-color: var(--orot-color-error);
+}
+.orot-input-number__affix--error.orot-input-number__affix--focused {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--orot-color-error) 20%, transparent);
+}
+
+.orot-input-number__affix--warning {
+  border-color: var(--orot-color-warning);
+}
+.orot-input-number__affix--warning.orot-input-number__affix--focused {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--orot-color-warning) 20%, transparent);
+}
+
+.orot-input-number__affix--disabled {
+  background: var(--orot-color-fill-tertiary);
+  cursor: not-allowed;
+  border-color: var(--orot-color-border);
+}
+
+/* ── Sizes ─────────────────────────────────── */
+.orot-input-number__affix--sm {
+  height: var(--orot-size-sm);
+  font-size: var(--orot-font-size-sm);
+}
+.orot-input-number__affix--md {
+  height: var(--orot-size-md);
+  font-size: var(--orot-font-size-md);
+}
+.orot-input-number__affix--lg {
+  height: var(--orot-size-lg);
+  font-size: var(--orot-font-size-lg);
+}
+
+/* ── Input ─────────────────────────────────── */
+.orot-input-number__prefix {
+  padding-left: var(--orot-space-3);
+  color: var(--orot-color-text-secondary);
+  display: inline-flex;
+  align-items: center;
+}
+
+.orot-input-number__input {
+  flex: 1;
+  min-width: 60px;
+  border: none;
+  outline: none;
+  background: transparent;
+  padding: 0 var(--orot-space-3);
+  font-size: inherit;
+  font-family: var(--orot-font-family);
+  color: var(--orot-color-text);
+  width: 100%;
+}
+
+.orot-input-number__input:disabled {
+  cursor: not-allowed;
+  color: var(--orot-color-text-disabled);
+}
+
+/* ── Controls ─────────────────────────────── */
+.orot-input-number__controls {
+  display: flex;
+  flex-direction: column;
+  border-left: var(--orot-border-width) solid var(--orot-color-border);
+}
+
+.orot-input-number__step {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  width: 22px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--orot-color-text-secondary);
+  font-size: 8px;
+  line-height: 1;
+  transition: background var(--orot-transition-fast), color var(--orot-transition-fast);
+}
+
+.orot-input-number__step:hover:not(:disabled) {
+  background: var(--orot-color-fill-secondary);
+  color: var(--orot-color-text);
+}
+
+.orot-input-number__step:disabled {
+  cursor: not-allowed;
+  color: var(--orot-color-text-disabled);
+}
+
+.orot-input-number__step-up {
+  border-bottom: var(--orot-border-width) solid var(--orot-color-border);
+}

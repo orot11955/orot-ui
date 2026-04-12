@@ -1,0 +1,61 @@
+/* orot-ui sepia theme
+   컨셉: 빈티지 노트·일기장 — 크림 종이 위의 만년필 잉크 */
+
+[data-orot-theme="sepia"] {
+  color-scheme: light;
+
+  /* Background */
+  --orot-color-bg:            #f5f0e8;
+  --orot-color-bg-secondary:  #ede8de;
+  --orot-color-bg-tertiary:   #e5dfd3;
+  --orot-color-bg-hover:      #e0d9cc;
+  --orot-color-bg-active:     #d8d0c2;
+  --orot-color-bg-container:  #f5f0e8;
+  --orot-color-bg-elevated:   #f8f4ee;
+
+  /* Fill */
+  --orot-color-fill-primary:   rgba(92, 74, 53, 0.18);
+  --orot-color-fill-secondary: rgba(92, 74, 53, 0.07);
+  --orot-color-fill-tertiary:  rgba(92, 74, 53, 0.04);
+
+  /* Border */
+  --orot-color-border:          #cec6b5;
+  --orot-color-border-secondary:#d8d0c2;
+  --orot-color-border-strong:   #a89e8a;
+  --orot-color-border-focus:    #5c4a35;
+
+  /* Text */
+  --orot-color-text:            #3a2e22;
+  --orot-color-text-secondary:  #7a6a55;
+  --orot-color-text-muted:      #a09080;
+  --orot-color-text-quaternary: #c0b0a0;
+  --orot-color-text-disabled:   #c8b8a8;
+  --orot-color-text-inverse:    #f5f0e8;
+
+  /* Primary */
+  --orot-color-primary:       #5c4a35;
+  --orot-color-primary-hover: #3a2e22;
+  --orot-color-primary-active:#6b5840;
+  --orot-color-primary-bg:    #e8e0d0;
+  --orot-color-primary-text:  #f5f0e8;
+
+  /* Semantic */
+  --orot-color-error:         #9c2a2a;
+  --orot-color-danger:        #9c2a2a;
+  --orot-color-danger-hover:  #7a2020;
+  --orot-color-danger-bg:     #f7eeec;
+  --orot-color-success:       #2e6040;
+  --orot-color-success-bg:    #eaf4ee;
+  --orot-color-warning:       #7a5800;
+  --orot-color-warning-bg:    #fdf6e4;
+  --orot-color-info:          #2a4e7a;
+  --orot-color-info-bg:       #eaf0f9;
+
+  /* Shadow */
+  --orot-shadow-sm: 0 1px 3px rgba(60, 40, 20, 0.08);
+  --orot-shadow-md: 0 2px 8px rgba(60, 40, 20, 0.12);
+  --orot-shadow-lg: 0 4px 16px rgba(60, 40, 20, 0.16);
+
+  /* Overlay */
+  --orot-overlay-bg: rgba(40, 28, 18, 0.5);
+}

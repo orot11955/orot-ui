@@ -1,0 +1,99 @@
+.orot-autocomplete {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+.orot-autocomplete__affix {
+  display: flex;
+  align-items: center;
+  border: var(--orot-border-width) solid var(--orot-color-border);
+  border-radius: var(--orot-radius-sm);
+  background: var(--orot-color-bg-container);
+  transition: border-color var(--orot-transition-fast), box-shadow var(--orot-transition-fast);
+}
+
+.orot-autocomplete__affix--sm { height: var(--orot-size-sm); font-size: var(--orot-font-size-sm); }
+.orot-autocomplete__affix--md { height: var(--orot-size-md); font-size: var(--orot-font-size-md); }
+.orot-autocomplete__affix--lg { height: var(--orot-size-lg); font-size: var(--orot-font-size-lg); }
+
+.orot-autocomplete__affix:focus-within,
+.orot-autocomplete__affix--open {
+  border-color: var(--orot-color-primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--orot-color-primary) 20%, transparent);
+}
+
+.orot-autocomplete__affix--error { border-color: var(--orot-color-error); }
+.orot-autocomplete__affix--warning { border-color: var(--orot-color-warning); }
+.orot-autocomplete__affix--disabled {
+  background: var(--orot-color-fill-tertiary);
+  cursor: not-allowed;
+}
+
+.orot-autocomplete__input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  padding: 0 var(--orot-space-3);
+  font-size: inherit;
+  font-family: var(--orot-font-family);
+  color: var(--orot-color-text);
+  width: 100%;
+}
+
+.orot-autocomplete__input:disabled {
+  cursor: not-allowed;
+  color: var(--orot-color-text-disabled);
+}
+
+.orot-autocomplete__clear {
+  padding: 0 var(--orot-space-2);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--orot-color-text-quaternary);
+  font-size: var(--orot-font-size-sm);
+  display: flex;
+  align-items: center;
+}
+.orot-autocomplete__clear:hover { color: var(--orot-color-text-secondary); }
+
+.orot-autocomplete__dropdown {
+  background: var(--orot-color-bg-elevated);
+  border: var(--orot-border-width) solid var(--orot-color-border-secondary);
+  border-radius: var(--orot-radius-sm);
+  box-shadow: var(--orot-shadow-md);
+  max-height: 256px;
+  overflow-y: auto;
+  animation: orot-autocomplete-in var(--orot-transition-fast) ease;
+}
+
+@keyframes orot-autocomplete-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.orot-autocomplete__option {
+  padding: var(--orot-space-2) var(--orot-space-3);
+  cursor: pointer;
+  font-size: var(--orot-font-size-md);
+  color: var(--orot-color-text);
+  transition: background var(--orot-transition-fast);
+}
+
+.orot-autocomplete__option--active {
+  background: var(--orot-color-fill-secondary);
+}
+
+.orot-autocomplete__option--disabled {
+  color: var(--orot-color-text-disabled);
+  cursor: not-allowed;
+}
+
+.orot-autocomplete__empty {
+  padding: var(--orot-space-3);
+  text-align: center;
+  color: var(--orot-color-text-secondary);
+  font-size: var(--orot-font-size-sm);
+}

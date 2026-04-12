@@ -1,0 +1,118 @@
+.orot-float-btn {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: var(--orot-border-width) solid var(--orot-color-border);
+  cursor: pointer;
+  background: var(--orot-color-bg-elevated);
+  color: var(--orot-color-text);
+  font-family: var(--orot-font-family);
+  box-shadow: var(--orot-shadow-md);
+  transition:
+    background var(--orot-transition-fast),
+    color var(--orot-transition-fast),
+    box-shadow var(--orot-transition-fast);
+  text-decoration: none;
+  overflow: visible;
+}
+
+.orot-float-btn--circle { border-radius: var(--orot-radius-full); }
+.orot-float-btn--square { border-radius: var(--orot-radius-md); }
+
+.orot-float-btn--primary {
+  background: var(--orot-color-primary);
+  color: var(--orot-color-primary-text);
+  border-color: var(--orot-color-primary);
+}
+
+.orot-float-btn:hover:not(:disabled) {
+  box-shadow: var(--orot-shadow-lg);
+}
+
+.orot-float-btn--primary:hover:not(:disabled) {
+  background: var(--orot-color-primary-hover);
+}
+
+.orot-float-btn__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.orot-float-btn__desc {
+  font-size: var(--orot-font-size-xs, 10px);
+  line-height: 1;
+  margin-top: 2px;
+}
+
+.orot-float-btn__tooltip {
+  position: absolute;
+  right: calc(100% + 8px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--orot-color-text);
+  color: var(--orot-color-bg-container);
+  padding: 2px 8px;
+  border-radius: var(--orot-radius-sm);
+  font-size: var(--orot-font-size-sm);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--orot-transition-fast);
+}
+.orot-float-btn:hover .orot-float-btn__tooltip { opacity: 1; }
+
+/* ── Badge ─────────────────────────────────── */
+.orot-float-btn__badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  background: var(--orot-color-error);
+  color: #fff;
+  border-radius: var(--orot-radius-full);
+  font-size: 11px;
+  font-weight: var(--orot-font-weight-medium);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.orot-float-btn__badge--dot {
+  width: 8px;
+  height: 8px;
+  min-width: unset;
+  padding: 0;
+  right: -2px;
+  top: -2px;
+}
+
+/* ── Group ─────────────────────────────────── */
+.orot-float-btn-group {
+  display: inline-flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: var(--orot-space-2);
+}
+
+.orot-float-btn-group__items {
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: var(--orot-space-2);
+  animation: orot-float-group-in var(--orot-transition-fast) ease;
+}
+
+@keyframes orot-float-group-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

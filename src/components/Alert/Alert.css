@@ -1,0 +1,104 @@
+/* ── Alert ───────────────────────────────────────────── */
+.orot-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--orot-space-3);
+  padding: var(--orot-space-3) var(--orot-space-4);
+  border-radius: var(--orot-radius-md);
+  border: var(--orot-border-width) solid transparent;
+  font-family: var(--orot-font-family);
+  font-size: var(--orot-font-size-md);
+  position: relative;
+}
+
+/* ── Types ───────────────────────────────────────────── */
+.orot-alert--info {
+  background: var(--orot-color-info-bg);
+  border-color: var(--orot-color-info);
+  color: var(--orot-color-info);
+}
+
+.orot-alert--success {
+  background: var(--orot-color-success-bg);
+  border-color: var(--orot-color-success);
+  color: var(--orot-color-success);
+}
+
+.orot-alert--warning {
+  background: var(--orot-color-warning-bg);
+  border-color: var(--orot-color-warning);
+  color: var(--orot-color-warning);
+}
+
+.orot-alert--error {
+  background: var(--orot-color-danger-bg);
+  border-color: var(--orot-color-danger);
+  color: var(--orot-color-danger);
+}
+
+/* ── Banner ──────────────────────────────────────────── */
+.orot-alert--banner {
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+  /* banner는 좌측 컬러 엣지로 강조 */
+  border-bottom-width: 2px;
+}
+
+.orot-alert--banner.orot-alert--info    { border-bottom-color: var(--orot-color-info); }
+.orot-alert--banner.orot-alert--success { border-bottom-color: var(--orot-color-success); }
+.orot-alert--banner.orot-alert--warning { border-bottom-color: var(--orot-color-warning); }
+.orot-alert--banner.orot-alert--error   { border-bottom-color: var(--orot-color-danger); }
+
+/* ── Icon ────────────────────────────────────────────── */
+.orot-alert__icon {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  font-size: 16px;
+  line-height: 1;
+  margin-top: 1px;
+}
+
+/* ── Content ─────────────────────────────────────────── */
+.orot-alert__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.orot-alert__message {
+  font-weight: var(--orot-font-weight-medium);
+  color: var(--orot-color-text);
+  line-height: var(--orot-line-height-base);
+}
+
+.orot-alert__description {
+  font-size: var(--orot-font-size-sm);
+  color: var(--orot-color-text-secondary);
+  margin-top: var(--orot-space-1);
+  line-height: var(--orot-line-height-base);
+}
+
+/* ── Action ──────────────────────────────────────────── */
+.orot-alert__action {
+  flex-shrink: 0;
+  margin-left: var(--orot-space-2);
+}
+
+/* ── Close ───────────────────────────────────────────── */
+.orot-alert__close {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  opacity: 0.65;
+  font-size: var(--orot-font-size-sm);
+  padding: 0;
+  line-height: 1;
+  transition: opacity var(--orot-transition-fast);
+  display: flex;
+  align-items: center;
+}
+.orot-alert__close:hover { opacity: 1; }

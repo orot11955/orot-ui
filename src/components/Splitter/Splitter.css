@@ -1,0 +1,60 @@
+/* ── Splitter ─────────────────────────────────────────── */
+.orot-splitter {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 0;
+}
+
+.orot-splitter--horizontal { flex-direction: row; }
+.orot-splitter--vertical   { flex-direction: column; }
+
+/* ── Panel ───────────────────────────────────────────── */
+.orot-splitter__panel {
+  overflow: auto;
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* ── Divider ─────────────────────────────────────────── */
+.orot-splitter__divider {
+  flex-shrink: 0;
+  background: var(--orot-color-border);
+  transition: background var(--orot-transition-fast);
+  position: relative;
+  z-index: 1;
+}
+
+.orot-splitter--horizontal .orot-splitter__divider {
+  width: 4px;
+  cursor: col-resize;
+}
+
+.orot-splitter--vertical .orot-splitter__divider {
+  height: 4px;
+  cursor: row-resize;
+}
+
+.orot-splitter__divider:hover,
+.orot-splitter__divider--active {
+  background: var(--orot-color-border-strong);
+}
+
+/* Wider hit area via pseudo-element */
+.orot-splitter--horizontal .orot-splitter__divider::before {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0;
+  left: -4px; right: -4px;
+}
+
+.orot-splitter--vertical .orot-splitter__divider::before {
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  top: -4px; bottom: -4px;
+}

@@ -1,0 +1,120 @@
+/* ── Progress (line) ─────────────────────────────────── */
+.orot-progress {
+  display: flex;
+  align-items: center;
+  gap: var(--orot-space-3);
+  font-family: var(--orot-font-family);
+  font-size: var(--orot-font-size-sm);
+  color: var(--orot-color-text-secondary);
+  width: 100%;
+  min-width: 0;
+}
+
+.orot-progress:not(.orot-progress--circle) {
+  flex: 1 1 100%;
+}
+
+.orot-progress--circle {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  width: auto;
+}
+
+/* ── Track ───────────────────────────────────────────── */
+.orot-progress__track {
+  position: relative;
+  flex: 1;
+  background: var(--orot-color-bg-tertiary);
+  border-radius: var(--orot-radius-full);
+  overflow: hidden;
+}
+
+.orot-progress--sm .orot-progress__track { height: 4px; }
+.orot-progress--md .orot-progress__track { height: 8px; }
+
+/* ── Bar ─────────────────────────────────────────────── */
+.orot-progress__bar {
+  position: absolute;
+  inset: 0 auto 0 0;
+  height: 100%;
+  border-radius: var(--orot-radius-full);
+  background: var(--orot-color-primary);
+  transition: width var(--orot-transition-slow);
+}
+
+.orot-progress__success-bar {
+  position: absolute;
+  inset: 0 auto 0 0;
+  height: 100%;
+  border-radius: var(--orot-radius-full);
+}
+
+.orot-progress--success .orot-progress__bar { background: var(--orot-color-success); }
+.orot-progress--exception .orot-progress__bar { background: var(--orot-color-danger); }
+
+.orot-progress--active .orot-progress__bar {
+  background: linear-gradient(
+    90deg,
+    var(--orot-color-primary) 0%,
+    color-mix(in srgb, var(--orot-color-primary) 60%, #fff) 50%,
+    var(--orot-color-primary) 100%
+  );
+  background-size: 200% 100%;
+  animation: orot-progress-active 1.8s ease-in-out infinite;
+}
+
+@keyframes orot-progress-active {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ── Info text ───────────────────────────────────────── */
+.orot-progress__info {
+  flex-shrink: 0;
+  min-width: 2.5em;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.orot-progress--success .orot-progress__info { color: var(--orot-color-success); }
+.orot-progress--exception .orot-progress__info { color: var(--orot-color-danger); }
+
+/* ── Circle type ─────────────────────────────────────── */
+.orot-progress__circle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.orot-progress__circle-text {
+  position: absolute;
+  font-size: var(--orot-font-size-md);
+  font-weight: var(--orot-font-weight-medium);
+  color: var(--orot-color-text);
+}
+
+.orot-progress--circle .orot-progress__info {
+  margin-top: var(--orot-space-2);
+  text-align: center;
+  min-width: unset;
+  display: none;
+}
+
+.orot-progress__steps-track {
+  display: grid;
+  grid-template-columns: repeat(var(--orot-progress-steps, 4), 1fr);
+  gap: var(--orot-space-1);
+  flex: 1;
+}
+
+.orot-progress__step {
+  height: 8px;
+  border-radius: var(--orot-radius-full);
+  background: var(--orot-color-bg-tertiary);
+}
+
+.orot-progress--sm .orot-progress__step {
+  height: 4px;
+}

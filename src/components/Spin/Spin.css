@@ -1,0 +1,62 @@
+/* ── Spin container ──────────────────────────────────── */
+.orot-spin-container {
+  position: relative;
+  display: inline-block;
+  min-width: 0;
+}
+
+.orot-spin-container--spinning > *:not(.orot-spin-overlay) {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* ── Overlay ─────────────────────────────────────────── */
+.orot-spin-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--orot-space-2);
+  z-index: 1;
+  background: color-mix(in srgb, var(--orot-color-bg) 72%, transparent);
+}
+
+/* ── Standalone spin ─────────────────────────────────── */
+.orot-spin {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--orot-space-2);
+  font-family: var(--orot-font-family);
+  font-size: var(--orot-font-size-sm);
+  color: var(--orot-color-text-secondary);
+}
+
+.orot-spin-fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: var(--orot-z-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--orot-color-bg) 82%, transparent);
+}
+
+/* ── Spinner ring ────────────────────────────────────── */
+.orot-spin__ring {
+  display: inline-block;
+  border: 2px solid var(--orot-color-border);
+  border-top-color: var(--orot-color-primary);
+  border-radius: 50%;
+  animation: orot-spin-rotate 0.65s linear infinite;
+}
+
+.orot-spin--sm .orot-spin__ring { width: 16px; height: 16px; }
+.orot-spin--md .orot-spin__ring { width: 24px; height: 24px; border-width: 2.5px; }
+.orot-spin--lg .orot-spin__ring { width: 36px; height: 36px; border-width: 3px; }
+
+@keyframes orot-spin-rotate {
+  to { transform: rotate(360deg); }
+}

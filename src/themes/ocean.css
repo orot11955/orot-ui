@@ -1,0 +1,61 @@
+/* orot-ui ocean theme
+   컨셉: 깊고 차분한 바다 — 코발트 블루 수면 위 흰 포말 */
+
+[data-orot-theme="ocean"] {
+  color-scheme: dark;
+
+  /* Background */
+  --orot-color-bg:            #0d1b2a;
+  --orot-color-bg-secondary:  #112236;
+  --orot-color-bg-tertiary:   #162d44;
+  --orot-color-bg-hover:      #1a3550;
+  --orot-color-bg-active:     #1e3d5c;
+  --orot-color-bg-container:  #112236;
+  --orot-color-bg-elevated:   #162d44;
+
+  /* Fill */
+  --orot-color-fill-primary:   rgba(77, 182, 232, 0.22);
+  --orot-color-fill-secondary: rgba(77, 182, 232, 0.09);
+  --orot-color-fill-tertiary:  rgba(77, 182, 232, 0.04);
+
+  /* Border */
+  --orot-color-border:          #1e3d5c;
+  --orot-color-border-secondary:#182f47;
+  --orot-color-border-strong:   #2e5f8a;
+  --orot-color-border-focus:    #4db6e8;
+
+  /* Text */
+  --orot-color-text:            #d6eaf8;
+  --orot-color-text-secondary:  #7fb3d3;
+  --orot-color-text-muted:      #4a7fa0;
+  --orot-color-text-quaternary: #2e5570;
+  --orot-color-text-disabled:   #2a4e66;
+  --orot-color-text-inverse:    #0d1b2a;
+
+  /* Primary */
+  --orot-color-primary:       #4db6e8;
+  --orot-color-primary-hover: #74c8f0;
+  --orot-color-primary-active:#2a9fd4;
+  --orot-color-primary-bg:    #1a3550;
+  --orot-color-primary-text:  #0d1b2a;
+
+  /* Semantic */
+  --orot-color-error:         #ff6b6b;
+  --orot-color-danger:        #ff6b6b;
+  --orot-color-danger-hover:  #ff8888;
+  --orot-color-danger-bg:     #2a1a1e;
+  --orot-color-success:       #4ade80;
+  --orot-color-success-bg:    #0d2218;
+  --orot-color-warning:       #fbbf24;
+  --orot-color-warning-bg:    #221a08;
+  --orot-color-info:          #60a5fa;
+  --orot-color-info-bg:       #0f1e35;
+
+  /* Shadow */
+  --orot-shadow-sm: 0 1px 3px rgba(0, 20, 40, 0.5);
+  --orot-shadow-md: 0 2px 8px rgba(0, 20, 40, 0.6);
+  --orot-shadow-lg: 0 4px 16px rgba(0, 20, 40, 0.7);
+
+  /* Overlay */
+  --orot-overlay-bg: rgba(0, 15, 30, 0.7);
+}

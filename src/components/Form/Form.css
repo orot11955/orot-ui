@@ -1,0 +1,79 @@
+/* ── Form ────────────────────────────────────────────── */
+.orot-form {
+  font-family: var(--orot-font-family);
+  font-size: var(--orot-font-size-md);
+  color: var(--orot-color-text);
+}
+
+.orot-form--vertical .orot-form-item {
+  flex-direction: column;
+}
+
+.orot-form--inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--orot-space-4);
+  align-items: flex-start;
+}
+
+.orot-form--inline .orot-form-item {
+  flex-direction: row;
+  align-items: center;
+  margin-bottom: 0;
+}
+
+/* ── Form Item ───────────────────────────────────────── */
+.orot-form-item {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: var(--orot-space-5);
+  gap: var(--orot-space-1);
+}
+
+.orot-form--horizontal .orot-form-item {
+  flex-direction: row;
+  align-items: flex-start;
+  gap: var(--orot-space-4);
+}
+
+/* ── Label ───────────────────────────────────────────── */
+.orot-form-item__label {
+  font-size: var(--orot-font-size-md);
+  color: var(--orot-color-text);
+  line-height: var(--orot-size-md);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.orot-form--horizontal .orot-form-item__label {
+  width: 120px;
+  text-align: right;
+}
+
+.orot-form-item__required::before {
+  content: '* ';
+  color: var(--orot-color-danger);
+}
+
+/* ── Control ─────────────────────────────────────────── */
+.orot-form-item__control {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ── Help / Extra ────────────────────────────────────── */
+.orot-form-item__help {
+  font-size: var(--orot-font-size-sm);
+  min-height: 20px;
+  line-height: 1.4;
+}
+
+.orot-form-item--error .orot-form-item__help    { color: var(--orot-color-danger); }
+.orot-form-item--warning .orot-form-item__help  { color: var(--orot-color-warning); }
+.orot-form-item--success .orot-form-item__help  { color: var(--orot-color-success); }
+
+.orot-form-item__extra {
+  font-size: var(--orot-font-size-sm);
+  color: var(--orot-color-text-secondary);
+  margin-top: var(--orot-space-1);
+}

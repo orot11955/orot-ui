@@ -1,0 +1,62 @@
+/* orot-ui light theme
+   컨셉: 베어 마크다운 메모앱 — 흰 종이 위의 잉크 */
+
+[data-orot-theme="light"],
+:root {
+  color-scheme: light;
+
+  /* Background */
+  --orot-color-bg:            #ffffff;
+  --orot-color-bg-secondary:  #f7f7f7;
+  --orot-color-bg-tertiary:   #efefef;
+  --orot-color-bg-hover:      #f0f0f0;
+  --orot-color-bg-active:     #e8e8e8;
+  --orot-color-bg-container:  #ffffff;
+  --orot-color-bg-elevated:   #ffffff;
+
+  /* Fill (for interactive elements, hover states) */
+  --orot-color-fill-primary:   rgba(0, 0, 0, 0.15);
+  --orot-color-fill-secondary: rgba(0, 0, 0, 0.06);
+  --orot-color-fill-tertiary:  rgba(0, 0, 0, 0.04);
+
+  /* Border */
+  --orot-color-border:          #e0e0e0;
+  --orot-color-border-secondary:#ebebeb;
+  --orot-color-border-strong:   #b0b0b0;
+  --orot-color-border-focus:    #555555;
+
+  /* Text */
+  --orot-color-text:            #1a1a1a;
+  --orot-color-text-secondary:  #666666;
+  --orot-color-text-muted:      #999999;
+  --orot-color-text-quaternary: #bfbfbf;
+  --orot-color-text-disabled:   #cccccc;
+  --orot-color-text-inverse:    #ffffff;
+
+  /* Primary (monochrome — 마크다운 텍스트 느낌) */
+  --orot-color-primary:       #1a1a1a;
+  --orot-color-primary-hover: #000000;
+  --orot-color-primary-active:#333333;
+  --orot-color-primary-bg:    #f0f0f0;
+  --orot-color-primary-text:  #ffffff;
+
+  /* Semantic */
+  --orot-color-error:         #c0392b;
+  --orot-color-danger:        #c0392b;
+  --orot-color-danger-hover:  #a93226;
+  --orot-color-danger-bg:     #fdf2f2;
+  --orot-color-success:       #27704a;
+  --orot-color-success-bg:    #f0faf4;
+  --orot-color-warning:       #8a6000;
+  --orot-color-warning-bg:    #fffbeb;
+  --orot-color-info:          #1a5fa8;
+  --orot-color-info-bg:       #eff6ff;
+
+  /* Shadow */
+  --orot-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --orot-shadow-md: 0 2px 8px rgba(0, 0, 0, 0.12);
+  --orot-shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.16);
+
+  /* Overlay */
+  --orot-overlay-bg: rgba(0, 0, 0, 0.45);
+}

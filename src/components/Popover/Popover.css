@@ -1,0 +1,90 @@
+.orot-popover-wrapper {
+  display: inline-flex;
+}
+
+.orot-popover {
+  background: var(--orot-color-bg-elevated);
+  border: var(--orot-border-width) solid var(--orot-color-border-secondary);
+  border-radius: var(--orot-radius-md);
+  box-shadow: var(--orot-shadow-md);
+  font-family: var(--orot-font-family);
+  font-size: var(--orot-font-size-md);
+  width: max-content;
+  max-width: min(320px, calc(100vw - 24px));
+  animation: orot-popover-in var(--orot-transition-fast) ease;
+}
+
+@keyframes orot-popover-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.orot-popover__title {
+  padding: var(--orot-space-2) var(--orot-space-4);
+  border-bottom: var(--orot-border-width) solid var(--orot-color-border-secondary);
+  font-weight: var(--orot-font-weight-medium);
+  color: var(--orot-color-text);
+  min-width: 177px;
+}
+
+.orot-popover__content {
+  padding: var(--orot-space-3) var(--orot-space-4);
+  color: var(--orot-color-text);
+}
+
+/* Placement classes are used for arrow direction only — actual position is inline style */
+
+/* ── Arrow ─────────────────────────────────── */
+.orot-popover::before {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 0;
+  border: 6px solid transparent;
+}
+
+.orot-popover--no-arrow::before { display: none; }
+
+.orot-popover--top::before,
+.orot-popover--topLeft::before,
+.orot-popover--topRight::before {
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-top-color: var(--orot-color-border-secondary);
+  border-bottom: none;
+}
+.orot-popover--topLeft::before  { left: var(--orot-space-4); transform: none; }
+.orot-popover--topRight::before { left: auto; right: var(--orot-space-4); transform: none; }
+
+.orot-popover--bottom::before,
+.orot-popover--bottomLeft::before,
+.orot-popover--bottomRight::before {
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-bottom-color: var(--orot-color-border-secondary);
+  border-top: none;
+}
+.orot-popover--bottomLeft::before  { left: var(--orot-space-4); transform: none; }
+.orot-popover--bottomRight::before { left: auto; right: var(--orot-space-4); transform: none; }
+
+.orot-popover--left::before,
+.orot-popover--leftTop::before,
+.orot-popover--leftBottom::before {
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  border-left-color: var(--orot-color-border-secondary);
+  border-right: none;
+}
+
+.orot-popover--right::before,
+.orot-popover--rightTop::before,
+.orot-popover--rightBottom::before {
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  border-right-color: var(--orot-color-border-secondary);
+  border-left: none;
+}

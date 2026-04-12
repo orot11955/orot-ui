@@ -1,0 +1,204 @@
+.orot-image {
+  display: inline-block;
+  position: relative;
+  overflow: hidden;
+  vertical-align: top;
+}
+
+.orot-image__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 0.2s;
+}
+
+.orot-image__img--loading {
+  opacity: 0;
+}
+
+/* Placeholder */
+.orot-image__placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--orot-color-bg-secondary);
+}
+
+.orot-image__placeholder-default {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    var(--orot-color-bg-secondary) 25%,
+    var(--orot-color-bg-tertiary) 50%,
+    var(--orot-color-bg-secondary) 75%
+  );
+  background-size: 200% 100%;
+  animation: orot-image-shimmer 1.4s ease infinite;
+}
+
+@keyframes orot-image-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Preview mask */
+.orot-image__mask {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: zoom-in;
+  transition: background 0.2s;
+}
+
+.orot-image:hover .orot-image__mask {
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.orot-image__mask-text {
+  color: #fff;
+  font-family: var(--orot-font-family);
+  font-size: var(--orot-font-size-sm);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.orot-image:hover .orot-image__mask-text {
+  opacity: 1;
+}
+
+/* ── Preview overlay ──────────────────────────────────────────── */
+.orot-image-preview {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.orot-image-preview__content {
+  max-width: 90vw;
+  max-height: 85vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.orot-image-preview__img {
+  max-width: 90vw;
+  max-height: 82vh;
+  object-fit: contain;
+  transition: transform 0.2s;
+  user-select: none;
+}
+
+/* Toolbar */
+.orot-image-preview__toolbar {
+  position: fixed;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: var(--orot-space-2);
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 24px;
+  padding: var(--orot-space-1) var(--orot-space-3);
+}
+
+.orot-image-preview__btn {
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  font-size: 1.1rem;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+
+.orot-image-preview__btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Nav */
+.orot-image-preview__nav {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.4);
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  font-size: 2rem;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+  z-index: 1;
+}
+
+.orot-image-preview__nav:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.orot-image-preview__nav:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.orot-image-preview__nav--prev { left: 16px; }
+.orot-image-preview__nav--next { right: 16px; }
+
+/* Counter */
+.orot-image-preview__counter {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: var(--orot-font-size-sm);
+  font-family: var(--orot-font-family);
+  background: rgba(0, 0, 0, 0.4);
+  padding: 2px 10px;
+  border-radius: 12px;
+}
+
+/* Close */
+.orot-image-preview__close {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  background: rgba(0, 0, 0, 0.4);
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  font-size: 1.1rem;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+  z-index: 1;
+}
+
+.orot-image-preview__close:hover {
+  background: rgba(0, 0, 0, 0.7);
+}

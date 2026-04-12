@@ -1,0 +1,31 @@
+/* ── Flex ────────────────────────────────────────────── */
+.orot-flex {
+  display: flex;
+  gap: var(--flex-gap, 0);
+  min-width: 0;
+  min-height: 0;
+  box-sizing: border-box;
+}
+
+/* wrap 모드에서 자식 요소 오버플로우 방지 */
+.orot-flex--wrap > * {
+  min-width: 0;
+}
+
+.orot-flex--vertical { flex-direction: column; }
+.orot-flex--wrap     { flex-wrap: wrap; }
+
+/* justify-content */
+.orot-flex--justify-start         { justify-content: flex-start; }
+.orot-flex--justify-end           { justify-content: flex-end; }
+.orot-flex--justify-center        { justify-content: center; }
+.orot-flex--justify-space-between { justify-content: space-between; }
+.orot-flex--justify-space-around  { justify-content: space-around; }
+.orot-flex--justify-space-evenly  { justify-content: space-evenly; }
+
+/* align-items */
+.orot-flex--align-start    { align-items: flex-start; }
+.orot-flex--align-end      { align-items: flex-end; }
+.orot-flex--align-center   { align-items: center; }
+.orot-flex--align-baseline { align-items: baseline; }
+.orot-flex--align-stretch  { align-items: stretch; }
