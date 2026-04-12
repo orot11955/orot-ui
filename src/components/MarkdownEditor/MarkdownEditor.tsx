@@ -33,6 +33,12 @@ function esc(text: string): string {
     .replace(/>/g, '&gt;');
 }
 
+function escAttr(text: string): string {
+  return esc(text)
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 // ── Inline parser ─────────────────────────────────────
 // Produces HTML; syntax markers are wrapped in <span class="orot-md-syntax">
 // so they count toward character offsets just like the raw markdown text.
@@ -130,7 +136,7 @@ function parseInline(raw: string): string {
         if (urlEnd !== -1) {
           const alt = raw.slice(i + 2, altEnd);
           const url = raw.slice(altEnd + 2, urlEnd);
-          result += `<span class="orot-md-syntax">![${esc(alt)}](${esc(url)})</span>`;
+          result += `<span class="orot-md-image"><span class="orot-md-image-token orot-md-syntax">![${esc(alt)}](${esc(url)})</span><span class="orot-md-image-preview" contenteditable="false"><img src="${escAttr(url)}" alt="${escAttr(alt)}" class="orot-md-image-preview__img" loading="lazy" /></span></span>`;
           i = urlEnd + 1;
           continue;
         }
@@ -145,7 +151,7 @@ function parseInline(raw: string): string {
         if (urlEnd !== -1) {
           const linkText = raw.slice(i + 1, textEnd);
           const url = raw.slice(textEnd + 2, urlEnd);
-          result += `<span class="orot-md-syntax">[</span><a href="${esc(url)}" class="orot-md-link" target="_blank" rel="noopener noreferrer">${parseInline(linkText)}</a><span class="orot-md-syntax">](${esc(url)})</span>`;
+          result += `<span class="orot-md-syntax">[</span><a href="${escAttr(url)}" class="orot-md-link" target="_blank" rel="noopener noreferrer">${parseInline(linkText)}</a><span class="orot-md-syntax">](${esc(url)})</span>`;
           i = urlEnd + 1;
           continue;
         }
@@ -166,6 +172,34 @@ function findSingleClose(text: string, start: number, char: string): number {
     if (text[i] === char && text[i + 1] !== char) return i;
   }
   return -1;
+}
+
+function findImageRangeForDeletion(
+  line: string,
+  charOffset: number,
+  direction: 'backward' | 'forward',
+): { start: number; end: number } | null {
+  const matches = line.matchAll(/!\[[^\]]*]\([^)\n]*\)/g);
+
+  for (const match of matches) {
+    const start = match.index ?? -1;
+    if (start === -1) continue;
+    const token = match[0];
+    const end = start + token.length;
+
+    if (direction === 'backward') {
+      if (charOffset === end || (charOffset > start && charOffset <= end)) {
+        return { start, end };
+      }
+      continue;
+    }
+
+    if (charOffset === start || (charOffset >= start && charOffset < end)) {
+      return { start, end };
+    }
+  }
+
+  return null;
 }
 
 // ── Block parser ──────────────────────────────────────
@@ -532,6 +566,33 @@ export function MarkdownEditor({
     (e: React.KeyboardEvent<HTMLDivElement>) => {
       const el = editorRef.current;
       if (!el) return;
+
+      if (e.key === 'Backspace' || e.key === 'Delete') {
+        const cursor = saveCursor(el);
+        if (cursor) {
+          const lines = rawRef.current.split('\n');
+          const line = lines[cursor.lineIndex] ?? '';
+          const imageRange = findImageRangeForDeletion(
+            line,
+            cursor.charOffset,
+            e.key === 'Backspace' ? 'backward' : 'forward',
+          );
+
+          if (imageRange) {
+            e.preventDefault();
+            lines[cursor.lineIndex] =
+              line.slice(0, imageRange.start) + line.slice(imageRange.end);
+            const newText = lines.join('\n');
+            rawRef.current = newText;
+            applyHTML(el, newText, {
+              lineIndex: cursor.lineIndex,
+              charOffset: imageRange.start,
+            });
+            onChange?.(newText);
+            return;
+          }
+        }
+      }
 
       // ── Enter ──────────────────────────────────────
       if (e.key === 'Enter' && !e.shiftKey) {

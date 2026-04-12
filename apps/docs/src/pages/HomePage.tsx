@@ -22,11 +22,11 @@ export default function HomePage() {
       <div className="home__section">
         <h2 className="home__section-title">Quick Start</h2>
         <pre className="home__code">{`# 설치
-pnpm add orot-ui
+아직 구현 중이므로 체험을 원할 시 orot1195@gmail.com으로 연락 부탁드립니다.
 
 # 글로벌 스타일 (main.tsx 또는 _app.tsx)
 import 'orot-ui/styles/global.css';
-import 'orot-ui/themes/light.css';   // light | dark | sepia`}</pre>
+import 'orot-ui/themes/light.css';   // light | dark | sepia | ocean | frest`}</pre>
       </div>
 
       <div className="home__section">
@@ -36,6 +36,8 @@ import 'orot-ui/themes/light.css';   // light | dark | sepia`}</pre>
             { name: 'light', desc: '흰 종이 위의 잉크' },
             { name: 'dark', desc: '터미널 / 코드 에디터' },
             { name: 'sepia', desc: '빈티지 노트 · 일기장' },
+            { name: 'ocean', desc: '푸른빛의 바다' },
+            { name: 'forest', desc: '숲과 같은 녹색' },
           ].map((t) => (
             <div key={t.name} className="home__theme-card">
               <strong>{t.name}</strong>

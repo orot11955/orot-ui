@@ -29,7 +29,7 @@ FROM nginx:alpine
 
 COPY --from=builder /app/apps/docs/dist /usr/share/nginx/html
 
-COPY apps/docs/nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=builder /app/apps/docs/nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
 
