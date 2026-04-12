@@ -1,23 +1,24 @@
 FROM node:20-alpine AS builder
 
-RUN npm install -g pnpm
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+
+RUN corepack enable
 
 WORKDIR /app
 
-# Copy workspace config
-COPY pnpm-workspace.yaml ./
-COPY package.json ./
-COPY tsconfig.base.json ./
+# Copy workspace manifests first for better layer caching
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
+COPY tsconfig.base.json tsconfig.json tsup.config.ts ./
 
-# Copy packages
-COPY packages/orot-ui/package.json ./packages/orot-ui/
-COPY apps/docs/package.json ./apps/docs/
+# Copy docs manifest
+COPY apps/docs/package.json ./apps/docs/package.json
 
 # Install deps
 RUN pnpm install --frozen-lockfile
 
 # Copy source
-COPY packages/orot-ui ./packages/orot-ui
+COPY src ./src
 COPY apps/docs ./apps/docs
 
 # Build library then docs
