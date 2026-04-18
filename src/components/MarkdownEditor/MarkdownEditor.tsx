@@ -20,411 +20,26 @@ import {
   Link,
   Image,
   Minus,
+  Table,
 } from 'lucide-react';
 import './MarkdownEditor.css';
-import type { MarkdownEditorProps, CursorPos } from './MarkdownEditor.types';
+import type {
+  MarkdownEditorProps,
+  CursorPos,
+  SelectionRange,
+} from './MarkdownEditor.types';
+import { renderMarkdown, findImageRangeForDeletion } from './parser';
+import {
+  saveCursor,
+  saveSelection,
+  restoreCursor,
+  restoreSelection,
+  getRawText,
+} from './selection';
 
-// ── HTML escape ───────────────────────────────────────
+export { renderMarkdown };
 
-function esc(text: string): string {
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
-}
-
-function escAttr(text: string): string {
-  return esc(text)
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
-// ── Inline parser ─────────────────────────────────────
-// Produces HTML; syntax markers are wrapped in <span class="orot-md-syntax">
-// so they count toward character offsets just like the raw markdown text.
-
-function parseInline(raw: string): string {
-  if (!raw) return '';
-  let result = '';
-  let i = 0;
-
-  while (i < raw.length) {
-    const ch = raw[i];
-
-    // Inline code: `code` — no nesting
-    if (ch === '`') {
-      const end = raw.indexOf('`', i + 1);
-      if (end !== -1) {
-        const content = raw.slice(i + 1, end);
-        result += `<span class="orot-md-syntax">\`</span><code class="orot-md-inline-code">${esc(content)}</code><span class="orot-md-syntax">\`</span>`;
-        i = end + 1;
-        continue;
-      }
-    }
-
-    // Bold: **text**
-    if (ch === '*' && raw[i + 1] === '*') {
-      const end = raw.indexOf('**', i + 2);
-      if (end !== -1 && end > i + 2) {
-        const content = raw.slice(i + 2, end);
-        result += `<span class="orot-md-syntax">**</span><strong class="orot-md-bold">${parseInline(content)}</strong><span class="orot-md-syntax">**</span>`;
-        i = end + 2;
-        continue;
-      }
-    }
-
-    // Bold: __text__
-    if (ch === '_' && raw[i + 1] === '_') {
-      const end = raw.indexOf('__', i + 2);
-      if (end !== -1 && end > i + 2) {
-        const content = raw.slice(i + 2, end);
-        result += `<span class="orot-md-syntax">__</span><strong class="orot-md-bold">${parseInline(content)}</strong><span class="orot-md-syntax">__</span>`;
-        i = end + 2;
-        continue;
-      }
-    }
-
-    // Italic: *text* (not **)
-    if (ch === '*' && raw[i + 1] !== '*') {
-      const end = findSingleClose(raw, i + 1, '*');
-      if (end !== -1) {
-        const content = raw.slice(i + 1, end);
-        result += `<span class="orot-md-syntax">*</span><em class="orot-md-italic">${parseInline(content)}</em><span class="orot-md-syntax">*</span>`;
-        i = end + 1;
-        continue;
-      }
-    }
-
-    // Italic: _text_ (not __)
-    if (ch === '_' && raw[i + 1] !== '_') {
-      const end = findSingleClose(raw, i + 1, '_');
-      if (end !== -1) {
-        const content = raw.slice(i + 1, end);
-        result += `<span class="orot-md-syntax">_</span><em class="orot-md-italic">${parseInline(content)}</em><span class="orot-md-syntax">_</span>`;
-        i = end + 1;
-        continue;
-      }
-    }
-
-    // Strikethrough: ~~text~~
-    if (ch === '~' && raw[i + 1] === '~') {
-      const end = raw.indexOf('~~', i + 2);
-      if (end !== -1 && end > i + 2) {
-        const content = raw.slice(i + 2, end);
-        result += `<span class="orot-md-syntax">~~</span><s class="orot-md-strike">${parseInline(content)}</s><span class="orot-md-syntax">~~</span>`;
-        i = end + 2;
-        continue;
-      }
-    }
-
-    // Highlight: ==text==
-    if (ch === '=' && raw[i + 1] === '=') {
-      const end = raw.indexOf('==', i + 2);
-      if (end !== -1 && end > i + 2) {
-        const content = raw.slice(i + 2, end);
-        result += `<span class="orot-md-syntax">==</span><mark class="orot-md-highlight">${parseInline(content)}</mark><span class="orot-md-syntax">==</span>`;
-        i = end + 2;
-        continue;
-      }
-    }
-
-    // Image: ![alt](url)
-    if (ch === '!' && raw[i + 1] === '[') {
-      const altEnd = raw.indexOf(']', i + 2);
-      if (altEnd !== -1 && raw[altEnd + 1] === '(') {
-        const urlEnd = raw.indexOf(')', altEnd + 2);
-        if (urlEnd !== -1) {
-          const alt = raw.slice(i + 2, altEnd);
-          const url = raw.slice(altEnd + 2, urlEnd);
-          result += `<span class="orot-md-image"><span class="orot-md-image-token orot-md-syntax">![${esc(alt)}](${esc(url)})</span><span class="orot-md-image-preview" contenteditable="false"><img src="${escAttr(url)}" alt="${escAttr(alt)}" class="orot-md-image-preview__img" loading="lazy" /></span></span>`;
-          i = urlEnd + 1;
-          continue;
-        }
-      }
-    }
-
-    // Link: [text](url)
-    if (ch === '[') {
-      const textEnd = raw.indexOf(']', i + 1);
-      if (textEnd !== -1 && raw[textEnd + 1] === '(') {
-        const urlEnd = raw.indexOf(')', textEnd + 2);
-        if (urlEnd !== -1) {
-          const linkText = raw.slice(i + 1, textEnd);
-          const url = raw.slice(textEnd + 2, urlEnd);
-          result += `<span class="orot-md-syntax">[</span><a href="${escAttr(url)}" class="orot-md-link" target="_blank" rel="noopener noreferrer">${parseInline(linkText)}</a><span class="orot-md-syntax">](${esc(url)})</span>`;
-          i = urlEnd + 1;
-          continue;
-        }
-      }
-    }
-
-    // Default: escape the character
-    result +=
-      ch === '&' ? '&amp;' : ch === '<' ? '&lt;' : ch === '>' ? '&gt;' : ch;
-    i++;
-  }
-
-  return result;
-}
-
-function findSingleClose(text: string, start: number, char: string): number {
-  for (let i = start; i < text.length; i++) {
-    if (text[i] === char && text[i + 1] !== char) return i;
-  }
-  return -1;
-}
-
-function findImageRangeForDeletion(
-  line: string,
-  charOffset: number,
-  direction: 'backward' | 'forward',
-): { start: number; end: number } | null {
-  const matches = line.matchAll(/!\[[^\]]*]\([^)\n]*\)/g);
-
-  for (const match of matches) {
-    const start = match.index ?? -1;
-    if (start === -1) continue;
-    const token = match[0];
-    const end = start + token.length;
-
-    if (direction === 'backward') {
-      if (charOffset === end || (charOffset > start && charOffset <= end)) {
-        return { start, end };
-      }
-      continue;
-    }
-
-    if (charOffset === start || (charOffset >= start && charOffset < end)) {
-      return { start, end };
-    }
-  }
-
-  return null;
-}
-
-// ── Block parser ──────────────────────────────────────
-
-export function renderMarkdown(rawText: string): string {
-  const lines = rawText.split('\n');
-  let inCodeBlock = false;
-  let isFirst = true;
-
-  const rendered = lines.map((line) => {
-    // Code fence toggle
-    if (line.startsWith('```')) {
-      if (inCodeBlock) {
-        inCodeBlock = false;
-        const html = `<div class="orot-md-line orot-md-code-fence-end"><span class="orot-md-code-line">${esc(line)}</span></div>`;
-        isFirst = false;
-        return html;
-      } else {
-        inCodeBlock = true;
-        const html = `<div class="orot-md-line orot-md-code-fence-start"><span class="orot-md-code-line">${esc(line)}</span></div>`;
-        isFirst = false;
-        return html;
-      }
-    }
-
-    // Inside code block
-    if (inCodeBlock) {
-      const html = `<div class="orot-md-line orot-md-code-content"><span class="orot-md-code-line">${esc(line) || '\u200b'}</span></div>`;
-      isFirst = false;
-      return html;
-    }
-
-    // Heading
-    const headingMatch = line.match(/^(#{1,6}) (.*)$/);
-    if (headingMatch) {
-      const level = headingMatch[1].length;
-      const content = headingMatch[2];
-      const html = `<div class="orot-md-line orot-md-h${level}"><span class="orot-md-syntax orot-md-heading-marker">${esc(headingMatch[1])} </span>${parseInline(content)}</div>`;
-      isFirst = false;
-      return html;
-    }
-
-    // Blockquote
-    if (line.startsWith('> ') || line === '>') {
-      const content = line.startsWith('> ') ? line.slice(2) : '';
-      const html = `<div class="orot-md-line orot-md-blockquote"><span class="orot-md-syntax">&gt; </span>${parseInline(content)}</div>`;
-      isFirst = false;
-      return html;
-    }
-
-    // Task list
-    const taskMatch = line.match(/^(\s*)-\s\[([ xX])\] (.*)$/);
-    if (taskMatch) {
-      const indent = taskMatch[1];
-      const checked = taskMatch[2].toLowerCase() === 'x';
-      const content = taskMatch[3];
-      const depthClass = `orot-md-list--depth-${Math.min(Math.floor(indent.length / 2), 3)}`;
-      const html = `<div class="orot-md-line orot-md-task ${depthClass}${checked ? ' orot-md-task--done' : ''}"><span class="orot-md-syntax">${esc(indent)}- [${esc(taskMatch[2])}] </span>${parseInline(content)}</div>`;
-      isFirst = false;
-      return html;
-    }
-
-    // Unordered list
-    const ulMatch = line.match(/^(\s*)[-*+] (.*)$/);
-    if (ulMatch) {
-      const indent = ulMatch[1];
-      const depthClass = `orot-md-list--depth-${Math.min(Math.floor(indent.length / 2), 3)}`;
-      const html = `<div class="orot-md-line orot-md-list ${depthClass}"><span class="orot-md-syntax">${esc(indent)}- </span>${parseInline(ulMatch[2])}</div>`;
-      isFirst = false;
-      return html;
-    }
-
-    // Ordered list
-    const olMatch = line.match(/^(\s*)(\d+)\. (.*)$/);
-    if (olMatch) {
-      const indent = olMatch[1];
-      const num = olMatch[2];
-      const html = `<div class="orot-md-line orot-md-list-ordered"><span class="orot-md-syntax">${esc(indent)}${esc(num)}. </span>${parseInline(olMatch[3])}</div>`;
-      isFirst = false;
-      return html;
-    }
-
-    // Horizontal rule
-    if (line.match(/^(---|\*\*\*|___)$/)) {
-      const html = `<div class="orot-md-line orot-md-hr" aria-hidden="true"><span class="orot-md-syntax">${esc(line)}</span></div>`;
-      isFirst = false;
-      return html;
-    }
-
-    // Empty line
-    if (line === '') {
-      isFirst = false;
-      return `<div class="orot-md-line"><br></div>`;
-    }
-
-    // Regular paragraph
-    const html = `<div class="orot-md-line">${parseInline(line)}</div>`;
-    isFirst = false;
-    return html;
-  });
-
-  // suppress "isFirst" lint warning — it's used as a mutable counter
-  void isFirst;
-  return rendered.join('');
-}
-
-// ── Cursor helpers ────────────────────────────────────
-
-function saveCursor(root: HTMLElement): CursorPos | null {
-  const sel = window.getSelection();
-  if (!sel || sel.rangeCount === 0) return null;
-
-  const range = sel.getRangeAt(0);
-  const lines = Array.from(root.children) as HTMLElement[];
-
-  for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
-    const line = lines[lineIndex];
-    if (!line.contains(range.startContainer) && line !== range.startContainer)
-      continue;
-
-    let charOffset = 0;
-    let found = false;
-
-    function countInLine(node: Node): boolean {
-      if (found) return true;
-      if (node === range.startContainer) {
-        if (node.nodeType === Node.TEXT_NODE) {
-          charOffset += range.startOffset;
-        } else {
-          // Element node as container: count children up to startOffset
-          const kids = Array.from(node.childNodes);
-          for (let k = 0; k < range.startOffset && k < kids.length; k++) {
-            charOffset += nodeTextLength(kids[k]);
-          }
-        }
-        found = true;
-        return true;
-      }
-      if (node.nodeType === Node.TEXT_NODE) {
-        charOffset += (node as Text).length;
-        return false;
-      }
-      const el = node as HTMLElement;
-      if (el.tagName === 'BR') return false;
-      for (const child of Array.from(node.childNodes)) {
-        if (countInLine(child)) return true;
-      }
-      return false;
-    }
-
-    countInLine(line);
-    return { lineIndex, charOffset };
-  }
-
-  return null;
-}
-
-function nodeTextLength(node: Node): number {
-  if (node.nodeType === Node.TEXT_NODE) return (node as Text).length;
-  if ((node as HTMLElement).tagName === 'BR') return 0;
-  let len = 0;
-  for (const child of Array.from(node.childNodes)) len += nodeTextLength(child);
-  return len;
-}
-
-function findNodeAtOffset(
-  root: Node,
-  remaining: number,
-): { node: Node; offset: number } | null {
-  if (root.nodeType === Node.TEXT_NODE) {
-    const text = root as Text;
-    if (remaining <= text.length) return { node: root, offset: remaining };
-    return null;
-  }
-  const el = root as HTMLElement;
-  if (el.tagName === 'BR') return null;
-
-  let rem = remaining;
-  for (const child of Array.from(root.childNodes)) {
-    const childLen = nodeTextLength(child);
-    if (rem <= childLen) {
-      return findNodeAtOffset(child, rem);
-    }
-    rem -= childLen;
-  }
-  return null;
-}
-
-function restoreCursor(root: HTMLElement, pos: CursorPos | null): void {
-  if (!pos) return;
-  const lines = Array.from(root.children) as HTMLElement[];
-  const lineEl = lines[Math.min(pos.lineIndex, lines.length - 1)];
-  if (!lineEl) return;
-
-  const found = findNodeAtOffset(lineEl, pos.charOffset);
-
-  const range = document.createRange();
-  const sel = window.getSelection();
-  if (!sel) return;
-
-  if (found) {
-    range.setStart(found.node, found.offset);
-  } else {
-    // Fallback: end of line
-    range.selectNodeContents(lineEl);
-    range.collapse(false);
-  }
-
-  range.collapse(true);
-  sel.removeAllRanges();
-  sel.addRange(range);
-}
-
-// ── Get raw text from contenteditable ────────────────
-
-function getRawText(root: HTMLElement): string {
-  const lines = Array.from(root.children) as HTMLElement[];
-  return lines
-    .map((line) => line.textContent ?? '')
-    .join('\n')
-    // Collapse invisible zero-width spaces we use for empty code lines
-    .replace(/\u200b/g, '');
-}
-
-// ── Component ─────────────────────────────────────────
+const URL_ONLY_RE = /^(https?:\/\/|www\.)[^\s<>()[\]{}'"]+$/i;
 
 export function MarkdownEditor({
   value,
@@ -433,11 +48,13 @@ export function MarkdownEditor({
   placeholder = 'Start writing...',
   readOnly = false,
   showToolbar = true,
+  showFloatingToolbar = true,
   showWordCount = true,
   minHeight = 320,
   maxHeight,
   autoFocus = false,
   onImageUpload,
+  onHashtagClick,
   className = '',
   style,
 }: MarkdownEditorProps) {
@@ -449,6 +66,9 @@ export function MarkdownEditor({
     chars: 0,
   });
   const [isEmpty, setIsEmpty] = useState(!rawRef.current);
+  const [floatingPos, setFloatingPos] = useState<
+    { top: number; left: number } | null
+  >(null);
 
   // ── Helpers ─────────────────────────────────────────
 
@@ -459,14 +79,34 @@ export function MarkdownEditor({
   };
 
   const applyHTML = useCallback(
-    (el: HTMLDivElement, text: string, cursor: CursorPos | null) => {
+    (
+      el: HTMLDivElement,
+      text: string,
+      sel: SelectionRange | CursorPos | null,
+    ) => {
       const html =
-        renderMarkdown(text) || '<div class="orot-md-line"><br></div>';
+        renderMarkdown(text) || '<div class="orot-md-line" data-line="0"><br></div>';
       el.innerHTML = html;
-      restoreCursor(el, cursor);
+
+      if (sel && 'start' in sel) {
+        restoreSelection(el, sel as SelectionRange);
+      } else {
+        restoreCursor(el, sel as CursorPos | null);
+      }
       updateStats(text);
     },
     [],
+  );
+
+  const commit = useCallback(
+    (text: string, sel: SelectionRange | CursorPos | null) => {
+      const el = editorRef.current;
+      if (!el) return;
+      rawRef.current = text;
+      applyHTML(el, text, sel);
+      onChange?.(text);
+    },
+    [applyHTML, onChange],
   );
 
   // ── Initialize ───────────────────────────────────────
@@ -501,64 +141,262 @@ export function MarkdownEditor({
     onChange?.(text);
   }, [applyHTML, onChange]);
 
-  // ── Toolbar format helpers ───────────────────────────
+  // ── Format helpers ───────────────────────────────────
 
   const applyInlineWrap = useCallback(
     (openMark: string, closeMark: string) => {
       const el = editorRef.current;
       if (!el) return;
-      const cursor = saveCursor(el);
-      if (!cursor) return;
+      const sel = saveSelection(el);
+      if (!sel) return;
 
       const lines = rawRef.current.split('\n');
-      const line = lines[cursor.lineIndex] ?? '';
+
+      // Collapsed cursor: insert markers and place cursor between them
+      if (sel.collapsed) {
+        const line = lines[sel.start.lineIndex] ?? '';
+        const newLine =
+          line.slice(0, sel.start.charOffset) +
+          openMark +
+          closeMark +
+          line.slice(sel.start.charOffset);
+        lines[sel.start.lineIndex] = newLine;
+        const next: CursorPos = {
+          lineIndex: sel.start.lineIndex,
+          charOffset: sel.start.charOffset + openMark.length,
+        };
+        commit(lines.join('\n'), next);
+        el.focus();
+        return;
+      }
+
+      // Non-collapsed: wrap/toggle. Only support single-line selections.
+      if (sel.start.lineIndex !== sel.end.lineIndex) {
+        // Multi-line: fall back to inserting markers around the full span
+        // by wrapping each line's selected portion individually.
+        const out = lines.slice();
+        for (let li = sel.start.lineIndex; li <= sel.end.lineIndex; li++) {
+          const line = out[li] ?? '';
+          const s = li === sel.start.lineIndex ? sel.start.charOffset : 0;
+          const e = li === sel.end.lineIndex ? sel.end.charOffset : line.length;
+          out[li] =
+            line.slice(0, s) + openMark + line.slice(s, e) + closeMark + line.slice(e);
+        }
+        commit(out.join('\n'), {
+          start: {
+            lineIndex: sel.start.lineIndex,
+            charOffset: sel.start.charOffset + openMark.length,
+          },
+          end: {
+            lineIndex: sel.end.lineIndex,
+            charOffset:
+              sel.end.lineIndex === sel.start.lineIndex
+                ? sel.end.charOffset + openMark.length
+                : sel.end.charOffset + openMark.length,
+          },
+          collapsed: false,
+        });
+        el.focus();
+        return;
+      }
+
+      const lineIdx = sel.start.lineIndex;
+      const line = lines[lineIdx] ?? '';
+      const selected = line.slice(sel.start.charOffset, sel.end.charOffset);
+
+      // Toggle form 1: selection already wraps with marks
+      if (
+        selected.startsWith(openMark) &&
+        selected.endsWith(closeMark) &&
+        selected.length >= openMark.length + closeMark.length
+      ) {
+        const inner = selected.slice(
+          openMark.length,
+          selected.length - closeMark.length,
+        );
+        const newLine =
+          line.slice(0, sel.start.charOffset) + inner + line.slice(sel.end.charOffset);
+        lines[lineIdx] = newLine;
+        commit(lines.join('\n'), {
+          start: { lineIndex: lineIdx, charOffset: sel.start.charOffset },
+          end: {
+            lineIndex: lineIdx,
+            charOffset: sel.start.charOffset + inner.length,
+          },
+          collapsed: inner.length === 0,
+        });
+        el.focus();
+        return;
+      }
+
+      // Toggle form 2: marks sit just outside selection
+      const beforeIsOpen =
+        line.slice(sel.start.charOffset - openMark.length, sel.start.charOffset) ===
+        openMark;
+      const afterIsClose =
+        line.slice(sel.end.charOffset, sel.end.charOffset + closeMark.length) ===
+        closeMark;
+      if (beforeIsOpen && afterIsClose) {
+        const newLine =
+          line.slice(0, sel.start.charOffset - openMark.length) +
+          line.slice(sel.start.charOffset, sel.end.charOffset) +
+          line.slice(sel.end.charOffset + closeMark.length);
+        lines[lineIdx] = newLine;
+        commit(lines.join('\n'), {
+          start: {
+            lineIndex: lineIdx,
+            charOffset: sel.start.charOffset - openMark.length,
+          },
+          end: {
+            lineIndex: lineIdx,
+            charOffset: sel.end.charOffset - openMark.length,
+          },
+          collapsed: false,
+        });
+        el.focus();
+        return;
+      }
+
+      // Plain wrap
       const newLine =
-        line.slice(0, cursor.charOffset) +
+        line.slice(0, sel.start.charOffset) +
         openMark +
+        selected +
         closeMark +
-        line.slice(cursor.charOffset);
-      lines[cursor.lineIndex] = newLine;
-      const newText = lines.join('\n');
-      rawRef.current = newText;
-      applyHTML(el, newText, {
-        lineIndex: cursor.lineIndex,
-        charOffset: cursor.charOffset + openMark.length,
+        line.slice(sel.end.charOffset);
+      lines[lineIdx] = newLine;
+      commit(lines.join('\n'), {
+        start: {
+          lineIndex: lineIdx,
+          charOffset: sel.start.charOffset + openMark.length,
+        },
+        end: {
+          lineIndex: lineIdx,
+          charOffset: sel.end.charOffset + openMark.length,
+        },
+        collapsed: false,
       });
-      onChange?.(newText);
       el.focus();
     },
-    [applyHTML, onChange],
+    [commit],
   );
 
   const toggleBlockPrefix = useCallback(
     (prefix: string) => {
       const el = editorRef.current;
       if (!el) return;
-      const cursor = saveCursor(el);
-      if (!cursor) return;
+      const sel = saveSelection(el);
+      if (!sel) return;
 
       const lines = rawRef.current.split('\n');
-      const line = lines[cursor.lineIndex] ?? '';
-      let newLine: string;
-      let newOffset: number;
+      const startIdx = sel.start.lineIndex;
+      const endIdx = sel.end.lineIndex;
 
-      if (line.startsWith(prefix)) {
-        newLine = line.slice(prefix.length);
-        newOffset = Math.max(0, cursor.charOffset - prefix.length);
-      } else {
-        newLine = prefix + line;
-        newOffset = cursor.charOffset + prefix.length;
+      // Detect uniform prefix: toggle off if *all* selected lines share it
+      const allHave = lines
+        .slice(startIdx, endIdx + 1)
+        .every((l) => l.startsWith(prefix));
+
+      // When toggling off, also drop sibling heading / list markers on the same line.
+      const HEADING_RE = /^#{1,6} /;
+      const LIST_RE = /^(\s*)(?:[-*+]|\d+\.) /;
+      const TASK_RE = /^(\s*)-\s\[[ xX]\] /;
+
+      for (let li = startIdx; li <= endIdx; li++) {
+        const line = lines[li] ?? '';
+        if (allHave) {
+          lines[li] = line.slice(prefix.length);
+        } else {
+          let base = line;
+          // Strip competing prefixes so toggling feels natural
+          if (prefix.match(HEADING_RE) || prefix === '> ') {
+            base = base.replace(HEADING_RE, '');
+            base = base.replace(/^> /, '');
+          }
+          if (prefix.match(LIST_RE) || prefix.match(TASK_RE)) {
+            base = base.replace(TASK_RE, '$1');
+            base = base.replace(LIST_RE, '$1');
+          }
+          lines[li] = prefix + base;
+        }
       }
 
-      lines[cursor.lineIndex] = newLine;
-      const newText = lines.join('\n');
-      rawRef.current = newText;
-      applyHTML(el, newText, { lineIndex: cursor.lineIndex, charOffset: newOffset });
-      onChange?.(newText);
+      const delta = allHave ? -prefix.length : prefix.length;
+      commit(lines.join('\n'), {
+        start: {
+          lineIndex: startIdx,
+          charOffset: Math.max(0, sel.start.charOffset + delta),
+        },
+        end: {
+          lineIndex: endIdx,
+          charOffset: Math.max(0, sel.end.charOffset + delta),
+        },
+        collapsed: sel.collapsed,
+      });
       el.focus();
     },
-    [applyHTML, onChange],
+    [commit],
   );
+
+  const insertAtCursor = useCallback(
+    (text: string, selectInserted = false) => {
+      const el = editorRef.current;
+      if (!el) return;
+      const sel = saveSelection(el);
+      if (!sel) return;
+      const lines = rawRef.current.split('\n');
+      const lineIdx = sel.start.lineIndex;
+      const line = lines[lineIdx] ?? '';
+      const pasted = text.split('\n');
+
+      const beforeCursor = line.slice(0, sel.start.charOffset);
+      const afterCursor = line.slice(sel.end.charOffset);
+
+      const replacement =
+        pasted.length === 1
+          ? [beforeCursor + pasted[0] + afterCursor]
+          : [
+              beforeCursor + pasted[0],
+              ...pasted.slice(1, -1),
+              pasted[pasted.length - 1] + afterCursor,
+            ];
+
+      lines.splice(lineIdx, sel.end.lineIndex - lineIdx + 1, ...replacement);
+
+      const lastLineIdx = lineIdx + pasted.length - 1;
+      const lastLineLen =
+        pasted.length === 1 ? beforeCursor.length + pasted[0].length : pasted[pasted.length - 1].length;
+
+      const next: SelectionRange = selectInserted
+        ? {
+            start: { lineIndex: lineIdx, charOffset: beforeCursor.length },
+            end: { lineIndex: lastLineIdx, charOffset: lastLineLen },
+            collapsed: false,
+          }
+        : {
+            start: { lineIndex: lastLineIdx, charOffset: lastLineLen },
+            end: { lineIndex: lastLineIdx, charOffset: lastLineLen },
+            collapsed: true,
+          };
+
+      commit(lines.join('\n'), next);
+    },
+    [commit],
+  );
+
+  const insertTable = useCallback(() => {
+    const el = editorRef.current;
+    if (!el) return;
+    const template = [
+      '',
+      '| Column 1 | Column 2 | Column 3 |',
+      '| -------- | -------- | -------- |',
+      '| Cell     | Cell     | Cell     |',
+      '',
+    ].join('\n');
+    insertAtCursor(template);
+    el.focus();
+  }, [insertAtCursor]);
 
   // ── Keyboard handler ─────────────────────────────────
 
@@ -582,13 +420,10 @@ export function MarkdownEditor({
             e.preventDefault();
             lines[cursor.lineIndex] =
               line.slice(0, imageRange.start) + line.slice(imageRange.end);
-            const newText = lines.join('\n');
-            rawRef.current = newText;
-            applyHTML(el, newText, {
+            commit(lines.join('\n'), {
               lineIndex: cursor.lineIndex,
               charOffset: imageRange.start,
             });
-            onChange?.(newText);
             return;
           }
         }
@@ -605,7 +440,6 @@ export function MarkdownEditor({
         const before = line.slice(0, cursor.charOffset);
         const after = line.slice(cursor.charOffset);
 
-        // Auto-continue list markers
         let newPrefix = '';
         const taskMatch = line.match(/^(\s*)-\s\[[ xX]\] /);
         const ulMatch = line.match(/^(\s*)[-*+] /);
@@ -636,13 +470,10 @@ export function MarkdownEditor({
           lines.splice(cursor.lineIndex + 1, 0, newPrefix + after);
         }
 
-        const newText = lines.join('\n');
-        rawRef.current = newText;
-        applyHTML(el, newText, {
+        commit(lines.join('\n'), {
           lineIndex: cursor.lineIndex + 1,
           charOffset: newPrefix.length,
         });
-        onChange?.(newText);
         return;
       }
 
@@ -655,69 +486,135 @@ export function MarkdownEditor({
         const line = lines[cursor.lineIndex] ?? '';
         lines[cursor.lineIndex] = line.slice(0, cursor.charOffset);
         lines.splice(cursor.lineIndex + 1, 0, line.slice(cursor.charOffset));
-        const newText = lines.join('\n');
-        rawRef.current = newText;
-        applyHTML(el, newText, { lineIndex: cursor.lineIndex + 1, charOffset: 0 });
-        onChange?.(newText);
+        commit(lines.join('\n'), {
+          lineIndex: cursor.lineIndex + 1,
+          charOffset: 0,
+        });
         return;
       }
 
       // ── Tab / Shift+Tab ───────────────────────────
       if (e.key === 'Tab') {
         e.preventDefault();
-        const cursor = saveCursor(el);
-        if (!cursor) return;
+        const sel = saveSelection(el);
+        if (!sel) return;
         const lines = rawRef.current.split('\n');
-        const line = lines[cursor.lineIndex] ?? '';
+        const startIdx = sel.start.lineIndex;
+        const endIdx = sel.end.lineIndex;
 
         if (e.shiftKey) {
-          if (line.startsWith('  ')) {
-            lines[cursor.lineIndex] = line.slice(2);
-            const newText = lines.join('\n');
-            rawRef.current = newText;
-            applyHTML(el, newText, {
-              lineIndex: cursor.lineIndex,
-              charOffset: Math.max(0, cursor.charOffset - 2),
-            });
-            onChange?.(newText);
+          let startDelta = 0;
+          let endDelta = 0;
+          for (let li = startIdx; li <= endIdx; li++) {
+            const line = lines[li] ?? '';
+            if (line.startsWith('  ')) {
+              lines[li] = line.slice(2);
+              if (li === startIdx) startDelta = -2;
+              if (li === endIdx) endDelta = -2;
+            }
           }
-        } else {
-          lines[cursor.lineIndex] = '  ' + line;
-          const newText = lines.join('\n');
-          rawRef.current = newText;
-          applyHTML(el, newText, {
-            lineIndex: cursor.lineIndex,
-            charOffset: cursor.charOffset + 2,
+          commit(lines.join('\n'), {
+            start: {
+              lineIndex: startIdx,
+              charOffset: Math.max(0, sel.start.charOffset + startDelta),
+            },
+            end: {
+              lineIndex: endIdx,
+              charOffset: Math.max(0, sel.end.charOffset + endDelta),
+            },
+            collapsed: sel.collapsed,
           });
-          onChange?.(newText);
+        } else {
+          for (let li = startIdx; li <= endIdx; li++) {
+            lines[li] = '  ' + (lines[li] ?? '');
+          }
+          commit(lines.join('\n'), {
+            start: {
+              lineIndex: startIdx,
+              charOffset: sel.start.charOffset + 2,
+            },
+            end: {
+              lineIndex: endIdx,
+              charOffset: sel.end.charOffset + 2,
+            },
+            collapsed: sel.collapsed,
+          });
         }
         return;
       }
 
       // ── Cmd/Ctrl shortcuts ────────────────────────
       const mod = e.metaKey || e.ctrlKey;
-      if (mod && e.key === 'b') {
+      const shift = e.shiftKey;
+      if (!mod) return;
+
+      if (e.key === 'b' || e.key === 'B') {
         e.preventDefault();
         applyInlineWrap('**', '**');
         return;
       }
-      if (mod && e.key === 'i') {
+      if (e.key === 'i' || e.key === 'I') {
         e.preventDefault();
         applyInlineWrap('*', '*');
         return;
       }
-      if (mod && e.key === 'k') {
+      if (e.key === 'k' || e.key === 'K') {
         e.preventDefault();
         applyInlineWrap('[', '](url)');
         return;
       }
-      if (mod && e.key === 'e') {
+      if (e.key === 'e' || e.key === 'E') {
         e.preventDefault();
         applyInlineWrap('`', '`');
         return;
       }
+      if (shift && (e.key === 'X' || e.key === 'x')) {
+        e.preventDefault();
+        applyInlineWrap('~~', '~~');
+        return;
+      }
+      if (shift && (e.key === 'H' || e.key === 'h')) {
+        e.preventDefault();
+        applyInlineWrap('==', '==');
+        return;
+      }
+      if (e.key === '1' && !shift) {
+        e.preventDefault();
+        toggleBlockPrefix('# ');
+        return;
+      }
+      if (e.key === '2' && !shift) {
+        e.preventDefault();
+        toggleBlockPrefix('## ');
+        return;
+      }
+      if (e.key === '3' && !shift) {
+        e.preventDefault();
+        toggleBlockPrefix('### ');
+        return;
+      }
+      if (shift && e.key === '8') {
+        e.preventDefault();
+        toggleBlockPrefix('- ');
+        return;
+      }
+      if (shift && e.key === '7') {
+        e.preventDefault();
+        toggleBlockPrefix('1. ');
+        return;
+      }
+      if (shift && (e.key === 'u' || e.key === 'U')) {
+        e.preventDefault();
+        toggleBlockPrefix('- [ ] ');
+        return;
+      }
+      if (shift && (e.key === '.' || e.key === '>')) {
+        e.preventDefault();
+        toggleBlockPrefix('> ');
+        return;
+      }
     },
-    [applyHTML, applyInlineWrap, onChange],
+    [applyInlineWrap, toggleBlockPrefix, commit],
   );
 
   // ── Paste handler ────────────────────────────────────
@@ -728,14 +625,38 @@ export function MarkdownEditor({
       const el = editorRef.current;
       if (!el) return;
 
-      const cursor = saveCursor(el);
       const pastedText = e.clipboardData.getData('text/plain');
       if (!pastedText) return;
 
+      const sel = saveSelection(el);
+      if (!sel) return;
+
+      // Smart URL paste: URL over non-empty selection → markdown link
+      if (!sel.collapsed && URL_ONLY_RE.test(pastedText.trim())) {
+        const url = pastedText.trim();
+        if (sel.start.lineIndex === sel.end.lineIndex) {
+          const lines = rawRef.current.split('\n');
+          const line = lines[sel.start.lineIndex] ?? '';
+          const selected = line.slice(sel.start.charOffset, sel.end.charOffset);
+          const inserted = `[${selected}](${url})`;
+          lines[sel.start.lineIndex] =
+            line.slice(0, sel.start.charOffset) +
+            inserted +
+            line.slice(sel.end.charOffset);
+          commit(lines.join('\n'), {
+            lineIndex: sel.start.lineIndex,
+            charOffset: sel.start.charOffset + inserted.length,
+          });
+          return;
+        }
+      }
+
+      // Default: plain-text paste replacing selection
       const allLines = rawRef.current.split('\n');
-      const currentLine = allLines[cursor?.lineIndex ?? 0] ?? '';
-      const beforeCursor = currentLine.slice(0, cursor?.charOffset ?? currentLine.length);
-      const afterCursor = currentLine.slice(cursor?.charOffset ?? currentLine.length);
+      const startLine = allLines[sel.start.lineIndex] ?? '';
+      const endLine = allLines[sel.end.lineIndex] ?? '';
+      const beforeCursor = startLine.slice(0, sel.start.charOffset);
+      const afterCursor = endLine.slice(sel.end.charOffset);
       const pastedLines = pastedText.split('\n');
 
       const replacementLines =
@@ -747,24 +668,85 @@ export function MarkdownEditor({
               pastedLines[pastedLines.length - 1] + afterCursor,
             ];
 
-      const lineIndex = cursor?.lineIndex ?? 0;
-      allLines.splice(lineIndex, 1, ...replacementLines);
-      const newText = allLines.join('\n');
-      rawRef.current = newText;
+      allLines.splice(
+        sel.start.lineIndex,
+        sel.end.lineIndex - sel.start.lineIndex + 1,
+        ...replacementLines,
+      );
 
-      const newLineIndex = lineIndex + pastedLines.length - 1;
+      const newLineIndex = sel.start.lineIndex + pastedLines.length - 1;
       const newCharOffset =
         pastedLines.length === 1
           ? beforeCursor.length + pastedLines[0].length
           : pastedLines[pastedLines.length - 1].length;
 
-      applyHTML(el, newText, { lineIndex: newLineIndex, charOffset: newCharOffset });
-      onChange?.(newText);
+      commit(allLines.join('\n'), {
+        lineIndex: newLineIndex,
+        charOffset: newCharOffset,
+      });
     },
-    [applyHTML, onChange],
+    [commit],
+  );
+
+  // ── Click handler (task checkboxes + hashtags) ───────
+
+  const handleClick = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      const target = e.target as HTMLElement;
+
+      // Task checkbox toggle
+      const toggle = target.closest<HTMLElement>('[data-task-toggle]');
+      if (toggle) {
+        const el = editorRef.current;
+        if (!el || readOnly) return;
+        e.preventDefault();
+        const lineIdx = parseInt(toggle.dataset.taskToggle ?? '-1', 10);
+        if (lineIdx < 0) return;
+        const lines = rawRef.current.split('\n');
+        const line = lines[lineIdx] ?? '';
+        const m = line.match(/^(\s*-\s\[)([ xX])(\] .*)$/);
+        if (!m) return;
+        const isChecked = m[2].toLowerCase() === 'x';
+        lines[lineIdx] = m[1] + (isChecked ? ' ' : 'x') + m[3];
+        const cursor = saveCursor(el);
+        commit(lines.join('\n'), cursor);
+        return;
+      }
+
+      // Hashtag click
+      const hashtag = target.closest<HTMLElement>('.orot-md-hashtag');
+      if (hashtag && onHashtagClick) {
+        const tag = hashtag.dataset.tag;
+        if (tag) onHashtagClick(tag);
+      }
+    },
+    [commit, onHashtagClick, readOnly],
   );
 
   // ── Drag-and-drop images ─────────────────────────────
+
+  const insertImage = useCallback(
+    async (file: File) => {
+      const el = editorRef.current;
+      if (!el) return;
+      const url = onImageUpload
+        ? await onImageUpload(file)
+        : await fileToDataURL(file);
+      const cursor = saveCursor(el);
+      const insertion = `![${file.name}](${url})`;
+      const lines = rawRef.current.split('\n');
+      const lineIdx = cursor?.lineIndex ?? 0;
+      const line = lines[lineIdx] ?? '';
+      const co = cursor?.charOffset ?? line.length;
+      lines[lineIdx] = line.slice(0, co) + insertion + line.slice(co);
+      commit(lines.join('\n'), {
+        lineIndex: lineIdx,
+        charOffset: co + insertion.length,
+      });
+      el.focus();
+    },
+    [commit, onImageUpload],
+  );
 
   const handleDrop = useCallback(
     async (e: React.DragEvent<HTMLDivElement>) => {
@@ -773,33 +755,9 @@ export function MarkdownEditor({
       );
       if (!files.length) return;
       e.preventDefault();
-
-      for (const file of files) {
-        let url: string;
-        if (onImageUpload) {
-          url = await onImageUpload(file);
-        } else {
-          url = await fileToDataURL(file);
-        }
-        const el = editorRef.current;
-        if (!el) continue;
-        const cursor = saveCursor(el);
-        const insertion = `![${file.name}](${url})`;
-        const lines = rawRef.current.split('\n');
-        const line = lines[cursor?.lineIndex ?? 0] ?? '';
-        const charOffset = cursor?.charOffset ?? line.length;
-        lines[cursor?.lineIndex ?? 0] =
-          line.slice(0, charOffset) + insertion + line.slice(charOffset);
-        const newText = lines.join('\n');
-        rawRef.current = newText;
-        applyHTML(el, newText, {
-          lineIndex: cursor?.lineIndex ?? 0,
-          charOffset: charOffset + insertion.length,
-        });
-        onChange?.(newText);
-      }
+      for (const file of files) await insertImage(file);
     },
-    [applyHTML, onChange, onImageUpload],
+    [insertImage],
   );
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -808,45 +766,51 @@ export function MarkdownEditor({
     }
   };
 
-  // ── Image toolbar button ──────────────────────────────
-
-  const handleImageToolbar = () => {
-    fileInputRef.current?.click();
-  };
+  const handleImageToolbar = () => fileInputRef.current?.click();
 
   const handleFileInput = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (!file) return;
       e.target.value = '';
-
-      let url: string;
-      if (onImageUpload) {
-        url = await onImageUpload(file);
-      } else {
-        url = await fileToDataURL(file);
-      }
-
-      const el = editorRef.current;
-      if (!el) return;
-      const cursor = saveCursor(el);
-      const insertion = `![${file.name}](${url})`;
-      const lines = rawRef.current.split('\n');
-      const lineIdx = cursor?.lineIndex ?? 0;
-      const line = lines[lineIdx] ?? '';
-      const co = cursor?.charOffset ?? line.length;
-      lines[lineIdx] = line.slice(0, co) + insertion + line.slice(co);
-      const newText = lines.join('\n');
-      rawRef.current = newText;
-      applyHTML(el, newText, {
-        lineIndex: lineIdx,
-        charOffset: co + insertion.length,
-      });
-      onChange?.(newText);
-      el.focus();
+      await insertImage(file);
     },
-    [applyHTML, onChange, onImageUpload],
+    [insertImage],
   );
+
+  // ── Floating selection toolbar ───────────────────────
+
+  useEffect(() => {
+    if (!showFloatingToolbar || readOnly) return;
+    const el = editorRef.current;
+    if (!el) return;
+
+    const onSelectionChange = () => {
+      const sel = window.getSelection();
+      if (!sel || sel.rangeCount === 0 || sel.isCollapsed) {
+        setFloatingPos(null);
+        return;
+      }
+      const range = sel.getRangeAt(0);
+      if (!el.contains(range.startContainer) || !el.contains(range.endContainer)) {
+        setFloatingPos(null);
+        return;
+      }
+      const rect = range.getBoundingClientRect();
+      if (rect.width < 2 && rect.height < 2) {
+        setFloatingPos(null);
+        return;
+      }
+      const parentRect = el.getBoundingClientRect();
+      setFloatingPos({
+        top: rect.top - parentRect.top - 44,
+        left: rect.left - parentRect.left + rect.width / 2,
+      });
+    };
+
+    document.addEventListener('selectionchange', onSelectionChange);
+    return () => document.removeEventListener('selectionchange', onSelectionChange);
+  }, [showFloatingToolbar, readOnly]);
 
   // ── CSS size values ──────────────────────────────────
 
@@ -857,27 +821,36 @@ export function MarkdownEditor({
 
   const toolbarGroups = [
     [
-      { icon: <Heading1 size={15} />, label: 'Heading 1', action: () => toggleBlockPrefix('# ') },
-      { icon: <Heading2 size={15} />, label: 'Heading 2', action: () => toggleBlockPrefix('## ') },
-      { icon: <Heading3 size={15} />, label: 'Heading 3', action: () => toggleBlockPrefix('### ') },
+      { icon: <Heading1 size={15} />, label: 'Heading 1 (⌘1)', action: () => toggleBlockPrefix('# ') },
+      { icon: <Heading2 size={15} />, label: 'Heading 2 (⌘2)', action: () => toggleBlockPrefix('## ') },
+      { icon: <Heading3 size={15} />, label: 'Heading 3 (⌘3)', action: () => toggleBlockPrefix('### ') },
     ],
     [
       { icon: <Bold size={15} />, label: 'Bold (⌘B)', action: () => applyInlineWrap('**', '**') },
       { icon: <Italic size={15} />, label: 'Italic (⌘I)', action: () => applyInlineWrap('*', '*') },
-      { icon: <Strikethrough size={15} />, label: 'Strikethrough', action: () => applyInlineWrap('~~', '~~') },
+      { icon: <Strikethrough size={15} />, label: 'Strikethrough (⌘⇧X)', action: () => applyInlineWrap('~~', '~~') },
       { icon: <Code size={15} />, label: 'Inline code (⌘E)', action: () => applyInlineWrap('`', '`') },
     ],
     [
-      { icon: <List size={15} />, label: 'Unordered list', action: () => toggleBlockPrefix('- ') },
-      { icon: <ListOrdered size={15} />, label: 'Ordered list', action: () => toggleBlockPrefix('1. ') },
-      { icon: <CheckSquare size={15} />, label: 'Task list', action: () => toggleBlockPrefix('- [ ] ') },
-      { icon: <Quote size={15} />, label: 'Blockquote', action: () => toggleBlockPrefix('> ') },
-      { icon: <Minus size={15} />, label: 'Horizontal rule', action: () => applyInlineWrap('', '\n---\n') },
+      { icon: <List size={15} />, label: 'Unordered list (⌘⇧8)', action: () => toggleBlockPrefix('- ') },
+      { icon: <ListOrdered size={15} />, label: 'Ordered list (⌘⇧7)', action: () => toggleBlockPrefix('1. ') },
+      { icon: <CheckSquare size={15} />, label: 'Task list (⌘⇧U)', action: () => toggleBlockPrefix('- [ ] ') },
+      { icon: <Quote size={15} />, label: 'Blockquote (⌘⇧.)', action: () => toggleBlockPrefix('> ') },
+      { icon: <Minus size={15} />, label: 'Horizontal rule', action: () => insertAtCursor('\n---\n') },
     ],
     [
       { icon: <Link size={15} />, label: 'Link (⌘K)', action: () => applyInlineWrap('[', '](url)') },
       { icon: <Image size={15} />, label: 'Insert image', action: handleImageToolbar },
+      { icon: <Table size={15} />, label: 'Insert table', action: insertTable },
     ],
+  ];
+
+  const floatingButtons = [
+    { icon: <Bold size={14} />, label: 'Bold', action: () => applyInlineWrap('**', '**') },
+    { icon: <Italic size={14} />, label: 'Italic', action: () => applyInlineWrap('*', '*') },
+    { icon: <Strikethrough size={14} />, label: 'Strikethrough', action: () => applyInlineWrap('~~', '~~') },
+    { icon: <Code size={14} />, label: 'Code', action: () => applyInlineWrap('`', '`') },
+    { icon: <Link size={14} />, label: 'Link', action: () => applyInlineWrap('[', '](url)') },
   ];
 
   // ── Render ───────────────────────────────────────────
@@ -899,7 +872,6 @@ export function MarkdownEditor({
                   title={btn.label}
                   aria-label={btn.label}
                   onMouseDown={(e) => {
-                    // Prevent blur on editor
                     e.preventDefault();
                     btn.action();
                   }}
@@ -915,26 +887,54 @@ export function MarkdownEditor({
         </div>
       )}
 
-      <div
-        ref={editorRef}
-        className="orot-md-content"
-        contentEditable={!readOnly}
-        suppressContentEditableWarning
-        onInput={handleInput}
-        onKeyDown={handleKeyDown}
-        onPaste={handlePaste}
-        onDrop={handleDrop}
-        onDragOver={handleDragOver}
-        data-placeholder={isEmpty ? placeholder : undefined}
-        style={{
-          minHeight: toCSS(minHeight),
-          maxHeight: toCSS(maxHeight),
-        }}
-        aria-label="Markdown editor"
-        aria-multiline="true"
-        role="textbox"
-        spellCheck
-      />
+      <div style={{ position: 'relative', display: 'flex', flex: 1, minHeight: 0 }}>
+        <div
+          ref={editorRef}
+          className="orot-md-content"
+          contentEditable={!readOnly}
+          suppressContentEditableWarning
+          onInput={handleInput}
+          onKeyDown={handleKeyDown}
+          onPaste={handlePaste}
+          onClick={handleClick}
+          onDrop={handleDrop}
+          onDragOver={handleDragOver}
+          data-placeholder={isEmpty ? placeholder : undefined}
+          style={{
+            minHeight: toCSS(minHeight),
+            maxHeight: toCSS(maxHeight),
+          }}
+          aria-label="Markdown editor"
+          aria-multiline="true"
+          role="textbox"
+          spellCheck
+        />
+
+        {showFloatingToolbar && !readOnly && floatingPos && (
+          <div
+            className="orot-md-floating-toolbar"
+            role="toolbar"
+            aria-label="Selection formatting"
+            style={{ top: floatingPos.top, left: floatingPos.left }}
+          >
+            {floatingButtons.map((btn) => (
+              <button
+                key={btn.label}
+                type="button"
+                className="orot-md-floating-btn"
+                title={btn.label}
+                aria-label={btn.label}
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  btn.action();
+                }}
+              >
+                {btn.icon}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
 
       {showWordCount && (
         <div className="orot-md-footer">
@@ -944,7 +944,6 @@ export function MarkdownEditor({
         </div>
       )}
 
-      {/* Hidden file input for image upload */}
       <input
         ref={fileInputRef}
         type="file"

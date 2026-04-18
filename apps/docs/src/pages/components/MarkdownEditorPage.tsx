@@ -4,74 +4,110 @@ import { DocPage } from '../../components/DocPage';
 import { Example } from '../../components/Example';
 import { PropsTable } from '../../components/PropsTable';
 
-const INITIAL_CONTENT = `# Bear-style Markdown Editor
+const INITIAL_CONTENT = `# 베어 스타일 마크다운 에디터
 
-Write in **markdown** and see it rendered *live* — no preview toggle needed.
+**마크다운**으로 입력하면 별도 미리보기 전환 없이 서식이 바로 반영됩니다.
 
-## Inline Formatting
+#design, #writing 같은 태그는 pill 형태로 표시됩니다. URL은 자동으로 링크 처리됩니다: https://example.com.
 
-- **Bold**: wrap text with \`**\`
-- *Italic*: wrap text with \`*\`
-- ~~Strikethrough~~: wrap text with \`~~\`
-- \`Inline code\`: wrap text with a backtick
-- ==Highlight==: wrap text with \`==\`
-- [Link](https://example.com): use \`[text](url)\`
+## 인라인 서식
 
-## Task Lists
+- **굵게**, *기울임*, ~~취소선~~, \`인라인 코드\`, ==형광펜==
+- [링크](https://example.com) 또는 선택한 텍스트 위에 URL 붙여넣기
+- 해시태그: #inspiration #product
 
-- [x] Build WYSIWYG markdown editor
-- [x] Add syntax highlighting for markers
-- [ ] Add image drag-and-drop
-- [ ] Add table support
+## 작업 목록
 
-## Blockquote
+- [x] 체크박스를 클릭해 완료 상태 토글
+- [x] 문법을 인식하는 선택 툴바
+- [ ] 이 에디터 위에 노트 앱 만들기
+- [ ] 해시태그, 표, 자동 링크 사용해 보기
 
-> The best time to plant a tree was 20 years ago.
-> The second best time is now.
+## 표
 
-## Code Block
+| 기능            | 단축키 | 상태 |
+| --------------- | ------ | ---- |
+| 굵게            | ⌘B     | ✓    |
+| 제목 1          | ⌘1     | ✓    |
+| 작업 목록       | ⌘⇧U    | ✓    |
+| 순서 없는 목록  | ⌘⇧8    | ✓    |
+
+## 인용문
+
+> 나무를 심기에 가장 좋은 때는 20년 전이었다.
+> 두 번째로 좋은 때는 바로 지금이다.
+
+## 코드 블록
 
 \`\`\`ts
 function greet(name: string): string {
-  return \`Hello, \${name}!\`;
+  return \`안녕하세요, \${name}!\`;
 }
 \`\`\`
 
 ---
 
-Try the toolbar above or use keyboard shortcuts:
-**⌘B** Bold · **⌘I** Italic · **⌘K** Link · **⌘E** Inline code
+텍스트를 선택하면 위쪽에 **플로팅 툴바**가 나타납니다.
 `;
 
 export default function MarkdownEditorPage() {
-  const [controlled, setControlled] = useState('# Controlled Editor\n\nEdit me!');
+  const [controlled, setControlled] = useState('# 제어형 에디터\n\n내용을 수정해 보세요!');
+  const [lastTag, setLastTag] = useState<string | null>(null);
 
   return (
     <DocPage
       title="MarkdownEditor"
-      description="Bear-inspired WYSIWYG markdown editor. Syntax markers remain visible but styled — you edit the formatted text directly, with no separate preview pane."
+      description="Bear 스타일을 참고한 WYSIWYG 마크다운 에디터입니다. 문법 표시는 숨기지 않고 자연스럽게 스타일링해 별도 프리뷰 패널 없이 서식이 적용된 텍스트를 직접 편집할 수 있습니다. 해시태그, 자동 링크, 표, 작업 목록 토글, 플로팅 툴바, URL 스마트 붙여넣기, 다양한 키보드 단축키를 지원합니다."
     >
       <Example
         title="기본 (WYSIWYG)"
-        code={`<MarkdownEditor defaultValue="# Hello\\n\\nStart **writing**..." />`}
+        code={`<MarkdownEditor defaultValue="# 안녕하세요\\n\\n**작성**을 시작해 보세요..." />`}
       >
-        <MarkdownEditor defaultValue={INITIAL_CONTENT} minHeight={400} />
+        <MarkdownEditor defaultValue={INITIAL_CONTENT} minHeight={520} />
       </Example>
 
       <Example
-        title="툴바 없음"
-        code={`<MarkdownEditor showToolbar={false} defaultValue="# No Toolbar\\n\\nUse keyboard shortcuts only." />`}
+        title="해시태그 클릭 이벤트"
+        code={`<MarkdownEditor
+  onHashtagClick={(tag) => console.log('clicked', tag)}
+  defaultValue="#inbox #today #focus - 태그를 클릭해 보세요"
+/>`}
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <MarkdownEditor
+            onHashtagClick={setLastTag}
+            defaultValue={`## 해시태그 필터링\n\n태그를 클릭하면 \`onHashtagClick\` 이 호출됩니다.\n\n#inbox #today #focus #writing #design`}
+            minHeight={180}
+          />
+          <div
+            style={{
+              padding: '8px 12px',
+              background: 'var(--orot-color-bg-secondary)',
+              border: '1px solid var(--orot-color-border)',
+              borderRadius: 'var(--orot-radius-sm)',
+              fontSize: 'var(--orot-font-size-sm)',
+              color: 'var(--orot-color-text-secondary)',
+            }}
+          >
+            마지막 클릭: {lastTag ? <code>#{lastTag}</code> : <em>없음</em>}
+          </div>
+        </div>
+      </Example>
+
+      <Example
+        title="상단 툴바 숨김"
+        code={`<MarkdownEditor showToolbar={false} defaultValue="# 툴바 없음" />`}
       >
         <MarkdownEditor
           showToolbar={false}
-          defaultValue="# No Toolbar\n\nUse **keyboard shortcuts** only.\n\n- ⌘B bold\n- ⌘I italic\n- ⌘K link"
+          defaultValue="# 툴바 없음\n\n**키보드 단축키**만으로 편집해 보세요.\n\n- ⌘B 굵게\n- ⌘I 기울임\n- ⌘K 링크\n- ⌘1/2/3 제목\n- ⌘⇧U 작업 목록 · ⌘⇧8 목록"
           minHeight={200}
         />
       </Example>
 
       <Example
-        title="Controlled (제어 컴포넌트)"
-        code={`const [value, setValue] = useState('# Controlled Editor\\n\\nEdit me!');
+        title="제어 모드"
+        code={`const [value, setValue] = useState('# 제어형 에디터\\n\\n내용을 수정해 보세요!');
 
 <MarkdownEditor value={value} onChange={setValue} />
 <pre>{value}</pre>`}
@@ -101,25 +137,36 @@ export default function MarkdownEditorPage() {
       </Example>
 
       <Example
-        title="읽기 전용 (ReadOnly)"
-        code={`<MarkdownEditor readOnly defaultValue="# Read Only\n\nThis editor cannot be edited." />`}
+        title="읽기 전용"
+        code={`<MarkdownEditor readOnly defaultValue="# 읽기 전용" />`}
       >
         <MarkdownEditor
           readOnly
           showToolbar={false}
-          defaultValue={`# Read Only\n\nThis content is **rendered** but *not editable*.\n\n- Item A\n- Item B\n\n> A read-only blockquote.\n\n\`\`\`js\nconsole.log('hello');\n\`\`\``}
+          defaultValue={`# 읽기 전용\n\n이 내용은 **렌더링**되지만 *편집할 수 없습니다*.\n\n- 항목 A\n- 항목 B\n\n> 읽기 전용 인용문 예시입니다.\n\n\`\`\`js\nconsole.log('hello');\n\`\`\``}
           minHeight={180}
         />
       </Example>
 
       <Example
-        title="Word Count 없음"
+        title="단어 수 표시 숨김"
         code={`<MarkdownEditor showWordCount={false} />`}
       >
         <MarkdownEditor
           showWordCount={false}
-          defaultValue="# No Footer\n\nWord count is hidden."
+          defaultValue="# 하단 정보 숨김\n\n단어 수 표시가 숨겨집니다."
           minHeight={120}
+        />
+      </Example>
+
+      <Example
+        title="플로팅 툴바 비활성화"
+        code={`<MarkdownEditor showFloatingToolbar={false} />`}
+      >
+        <MarkdownEditor
+          showFloatingToolbar={false}
+          defaultValue="# 플로팅 툴바 없음\n\n텍스트를 선택해도 플로팅 툴바가 나타나지 않습니다.\n상단 툴바만 사용하고 싶을 때 유용합니다."
+          minHeight={180}
         />
       </Example>
 
@@ -130,7 +177,7 @@ export default function MarkdownEditorPage() {
         <MarkdownEditor
           minHeight={100}
           maxHeight={200}
-          defaultValue={Array.from({ length: 20 }, (_, i) => `Line ${i + 1}: Some content here.`).join('\n')}
+          defaultValue={Array.from({ length: 20 }, (_, i) => `줄 ${i + 1}: 스크롤 동작을 확인하기 위한 예시 내용입니다.`).join('\n')}
         />
       </Example>
 
@@ -156,7 +203,7 @@ export default function MarkdownEditorPage() {
             name: 'placeholder',
             type: 'string',
             default: "'Start writing...'",
-            description: '에디터가 비어있을 때 표시할 안내 문구',
+            description: '에디터가 비어있을 때 표시할 플레이스홀더 문구',
           },
           {
             name: 'readOnly',
@@ -168,7 +215,13 @@ export default function MarkdownEditorPage() {
             name: 'showToolbar',
             type: 'boolean',
             default: 'true',
-            description: '서식 툴바 표시 여부',
+            description: '상단 서식 툴바 표시 여부',
+          },
+          {
+            name: 'showFloatingToolbar',
+            type: 'boolean',
+            default: 'true',
+            description: '텍스트 선택 시 떠오르는 플로팅 서식 툴바 표시 여부',
           },
           {
             name: 'showWordCount',
@@ -199,6 +252,11 @@ export default function MarkdownEditorPage() {
             description:
               '이미지 파일 선택/드롭 시 호출. URL 반환 시 ![name](url) 삽입. 미지정 시 data-URL 사용',
           },
+          {
+            name: 'onHashtagClick',
+            type: '(tag: string) => void',
+            description: '해시태그(#tag) 클릭 시 호출 — 태그 기반 필터/검색 연동에 사용',
+          },
         ]}
       />
 
@@ -216,20 +274,32 @@ export default function MarkdownEditorPage() {
       >
         <strong style={{ color: 'var(--orot-color-text)' }}>지원 문법</strong>
         <br />
-        <code># H1</code> · <code>## H2</code> ~ <code>###### H6</code> ·{' '}
-        <code>**bold**</code> · <code>*italic*</code> · <code>~~strike~~</code>{' '}
-        · <code>==highlight==</code> · <code>`code`</code> ·{' '}
+        <code># H1</code> ~ <code>###### H6</code> · <code>**bold**</code> ·{' '}
+        <code>*italic*</code> · <code>~~strike~~</code> ·{' '}
+        <code>==highlight==</code> · <code>`code`</code> ·{' '}
         <code>[text](url)</code> · <code>![alt](url)</code> ·{' '}
-        <code>- [ ] task</code> · <code>- [x] done</code> ·{' '}
-        <code>&gt; blockquote</code> · <code>```lang</code> · <code>---</code>
+        <code>- [ ] task</code> / <code>- [x] done</code> ·{' '}
+        <code>&gt; blockquote</code> · <code>```lang</code> · <code>---</code> ·{' '}
+        <code>| cell | cell |</code> (파이프 테이블) · <code>#tag</code> (해시태그) ·{' '}
+        자동 URL 링크
         <br />
         <br />
         <strong style={{ color: 'var(--orot-color-text)' }}>단축키</strong>
         <br />
-        <code>⌘B</code> Bold · <code>⌘I</code> Italic · <code>⌘K</code> Link ·{' '}
-        <code>⌘E</code> Inline code · <code>Tab</code> Indent ·{' '}
-        <code>⇧Tab</code> Unindent · <code>Enter</code> 리스트 자동 계속 ·{' '}
-        이미지 드래그 앤 드롭 지원
+        <code>⌘B</code> 굵게 · <code>⌘I</code> 기울임 · <code>⌘E</code> 인라인
+        코드 · <code>⌘K</code> 링크 · <code>⌘⇧X</code> 취소선 ·{' '}
+        <code>⌘⇧H</code> 형광펜 · <code>⌘1/2/3</code> 제목 1/2/3 ·{' '}
+        <code>⌘⇧8</code> 목록 · <code>⌘⇧7</code> 번호 목록 ·{' '}
+        <code>⌘⇧U</code> 작업 목록 · <code>⌘⇧.</code> 인용문 · <code>Tab</code>{' '}
+        들여쓰기 · <code>⇧Tab</code> 내어쓰기 · <code>Enter</code> 리스트 자동 계속 ·{' '}
+        <code>⇧Enter</code> 소프트 줄바꿈
+        <br />
+        <br />
+        <strong style={{ color: 'var(--orot-color-text)' }}>상호작용</strong>
+        <br />
+        · 체크박스 <code>[ ]</code>/<code>[x]</code> 클릭으로 완료 토글 · 이미지
+        드래그 앤 드롭 · 선택 영역 위에 URL 붙여넣기 →{' '}
+        <code>[선택](url)</code> 자동 변환 · 텍스트 선택 시 플로팅 툴바 표시
       </div>
     </DocPage>
   );

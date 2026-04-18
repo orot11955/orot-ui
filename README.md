@@ -58,6 +58,36 @@ pnpm build
 pnpm build:docs
 ```
 
+## Publishing
+
+`npm publish`는 이 저장소 전체를 배포하는 명령이 아니라, 현재 위치의 npm 패키지 하나를 배포합니다.
+
+- 루트 `orot-ui` 패키지는 npm 배포 대상입니다.
+- `apps/docs`는 `"private": true`라서 npm에 publish되지 않습니다.
+- 문서 사이트는 npm publish가 아니라 별도 호스팅으로 배포해야 합니다.
+
+배포 전에 포함 파일을 확인하려면:
+
+```bash
+npm run pack:dry-run
+```
+
+실제 publish 직전 검증:
+
+```bash
+npm run publish:dry-run
+```
+
+워크스페이스 전체 기준으로 확인하려면:
+
+```bash
+npm run publish:all:dry-run
+```
+
+이 경우 루트 `orot-ui`는 publish 대상으로 잡히고, `apps/docs`는 `private` 패키지라 자동으로 skip됩니다.
+
+실제 publish 시에는 `prepublishOnly`로 라이브러리 빌드가 자동 실행됩니다.
+
 ## Usage
 
 기본 사용 예시입니다.
