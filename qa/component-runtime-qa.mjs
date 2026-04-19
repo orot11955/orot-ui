@@ -63,6 +63,11 @@ async function saveScreenshot(page, fileName) {
   });
 }
 
+const PNG_1X1 = Buffer.from(
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wn8k6QAAAAASUVORK5CYII=',
+  'base64'
+);
+
 const browser = await chromium.launch({
   headless: true,
 });
@@ -299,6 +304,65 @@ try {
     });
   } catch (error) {
     recordResult(results, 'Splitter', 'fail', { error: String(error) });
+  }
+
+  try {
+    await page.goto(`${baseURL}/components/markdown-editor`);
+    await page.getByRole('heading', { name: 'MarkdownEditor', exact: true }).waitFor();
+
+    const uploadExample = example(page, '비동기 이미지 업로드 (순서 유지)');
+    const [fileChooser] = await Promise.all([
+      page.waitForEvent('filechooser'),
+      uploadExample.getByRole('button', { name: 'Insert image' }).click(),
+    ]);
+
+    await fileChooser.setFiles([
+      { name: 'first-slow.png', mimeType: 'image/png', buffer: PNG_1X1 },
+      { name: 'second-fast.png', mimeType: 'image/png', buffer: PNG_1X1 },
+    ]);
+
+    const uploadOutput = uploadExample.locator('[data-qa="markdown-upload-output"]');
+    const uploadOutputHandle = await uploadOutput.elementHandle();
+    assert.ok(uploadOutputHandle, 'Upload output element should exist');
+    await page.waitForFunction(
+      (element) => {
+        const text = element?.textContent ?? '';
+        return (
+          text.includes('first-slow.png') &&
+          text.includes('second-fast.png') &&
+          text.includes('data:image/svg+xml') &&
+          !text.includes('blob:')
+        );
+      },
+      uploadOutputHandle,
+    );
+
+    const outputText = await uploadOutput.textContent();
+    assert.ok(outputText, 'Upload output should render the final markdown text');
+    assert.ok(
+      outputText.indexOf('first-slow.png') < outputText.indexOf('second-fast.png'),
+      'Inserted image markdown should preserve the original file order'
+    );
+
+    const uploadPreviewImages = uploadExample.locator('.orot-md-image-preview__img');
+    await waitForText(page, uploadOutput, 'data:image/svg+xml');
+    assert.equal(
+      await uploadPreviewImages.count(),
+      2,
+      'Async upload example should render two uploaded preview images'
+    );
+
+    await saveScreenshot(page, 'markdown-editor-runtime.png');
+    recordResult(results, 'MarkdownEditor', 'pass', {
+      checks: [
+        'Multiple file input upload',
+        'Upload completion order does not reorder markdown',
+        'Temporary blob URLs replaced by final URLs',
+      ],
+      screenshot: 'markdown-editor-runtime.png',
+    });
+  } catch (error) {
+    recordResult(results, 'MarkdownEditor', 'fail', { error: String(error) });
   }
 
   const mobileContext = await browser.newContext({

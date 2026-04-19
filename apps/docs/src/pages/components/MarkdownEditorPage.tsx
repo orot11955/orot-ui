@@ -78,9 +78,52 @@ const THUMBNAIL_CONTENT = `## 사진이 많은 문서
 
 const resolveImageSource = (url: string) => THUMBNAIL_IMAGE_MAP[url as keyof typeof THUMBNAIL_IMAGE_MAP] ?? null;
 
+const ASYNC_UPLOAD_INITIAL = `## 비동기 이미지 업로드
+
+여러 이미지를 한 번에 넣어도 본문 순서는 유지됩니다.
+
+`;
+
+function escapeSvgText(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function createUploadPreviewSvg(name: string, hue: number): string {
+  const label = name.length > 18 ? `${name.slice(0, 18)}…` : name;
+  const palette =
+    hue > 100
+      ? {
+          outer: '#dceeff',
+          inner: '#b6d7ff',
+          text: '#14314f',
+        }
+      : {
+          outer: '#ffe8d8',
+          inner: '#ffc9a3',
+          text: '#5b2b14',
+        };
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="480" height="270" viewBox="0 0 480 270"><rect width="480" height="270" rx="28" fill="${palette.outer}"/><rect x="28" y="28" width="424" height="214" rx="20" fill="${palette.inner}"/><text x="240" y="122" text-anchor="middle" font-family="monospace" font-size="18" fill="${palette.text}">upload complete</text><text x="240" y="154" text-anchor="middle" font-family="monospace" font-size="20" fill="${palette.text}">${escapeSvgText(label)}</text></svg>`;
+
+  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+}
+
+async function demoImageUpload(file: File): Promise<string> {
+  const lower = file.name.toLowerCase();
+  const delay = lower.includes('fast') || lower.includes('2') ? 90 : 280;
+  const hue = lower.includes('fast') || lower.includes('2') ? 204 : 26;
+  await new Promise((resolve) => window.setTimeout(resolve, delay));
+  return createUploadPreviewSvg(file.name, hue);
+}
+
 export default function MarkdownEditorPage() {
   const [controlled, setControlled] = useState('# 제어형 에디터\n\n내용을 수정해 보세요!');
   const [lastTag, setLastTag] = useState<string | null>(null);
+  const [uploadDemoValue, setUploadDemoValue] = useState(ASYNC_UPLOAD_INITIAL);
 
   return (
     <DocPage
@@ -141,6 +184,45 @@ export default function MarkdownEditorPage() {
           resolveImageSource={resolveImageSource}
           minHeight={320}
         />
+      </Example>
+
+      <Example
+        title="비동기 이미지 업로드 (순서 유지)"
+        description="이미지 버튼이나 드래그 앤 드롭으로 여러 파일을 넣으면, 업로드 완료 순서와 상관없이 본문 삽입 순서는 유지됩니다."
+        code={`const [value, setValue] = useState(initialValue);
+
+async function onImageUpload(file: File) {
+  await delay(file.name.includes('fast') ? 90 : 280);
+  return createUploadPreviewSvg(file.name);
+}
+
+<MarkdownEditor value={value} onChange={setValue} onImageUpload={onImageUpload} />
+<pre>{value}</pre>`}
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <MarkdownEditor
+            value={uploadDemoValue}
+            onChange={setUploadDemoValue}
+            onImageUpload={demoImageUpload}
+            minHeight={260}
+          />
+          <pre
+            data-qa="markdown-upload-output"
+            style={{
+              margin: 0,
+              padding: '12px 16px',
+              background: 'var(--orot-color-bg-secondary)',
+              border: '1px solid var(--orot-color-border)',
+              borderRadius: 'var(--orot-radius-md)',
+              fontSize: 'var(--orot-font-size-sm)',
+              color: 'var(--orot-color-text-secondary)',
+              whiteSpace: 'pre-wrap',
+              wordBreak: 'break-word',
+            }}
+          >
+            {uploadDemoValue}
+          </pre>
+        </div>
       </Example>
 
       <Example

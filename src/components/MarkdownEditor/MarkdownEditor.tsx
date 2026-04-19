@@ -35,6 +35,7 @@ import {
   renderMarkdown,
   renderMarkdownLines,
   findImageRangeForDeletion,
+  type MarkdownRenderOptions,
 } from './parser';
 import {
   saveCursor,
@@ -64,6 +65,11 @@ interface SlashState {
 interface ImagePreviewState {
   src: string;
   alt: string;
+}
+
+interface ImageSize {
+  width: number;
+  height: number;
 }
 
 type EditorSelectionState = SelectionRange | CursorPos | null;
@@ -245,6 +251,18 @@ function restoreRenderedImages(
     savedImg.className = nextImg.className;
     savedImg.alt = nextImg.alt;
     savedImg.draggable = false;
+    const widthAttr = nextImg.getAttribute('width');
+    const heightAttr = nextImg.getAttribute('height');
+    if (widthAttr) {
+      savedImg.setAttribute('width', widthAttr);
+    } else {
+      savedImg.removeAttribute('width');
+    }
+    if (heightAttr) {
+      savedImg.setAttribute('height', heightAttr);
+    } else {
+      savedImg.removeAttribute('height');
+    }
     nextImg.replaceWith(savedImg);
 
     if (bucket && bucket.length === 0) {
@@ -346,6 +364,141 @@ function detectSlashTrigger(
   };
 }
 
+function createRenderCache(
+  limit = 400,
+): NonNullable<MarkdownRenderOptions['cache']> {
+  const store = new Map<string, string[]>();
+
+  return {
+    get(key) {
+      const cached = store.get(key);
+      if (!cached) return undefined;
+      store.delete(key);
+      store.set(key, cached);
+      return cached.slice();
+    },
+    set(key, lines) {
+      if (store.has(key)) {
+        store.delete(key);
+      }
+      store.set(key, lines.slice());
+      if (store.size > limit) {
+        const oldestKey = store.keys().next().value;
+        if (oldestKey !== undefined) {
+          store.delete(oldestKey);
+        }
+      }
+    },
+  };
+}
+
+function cursorToTextOffset(text: string, cursor: CursorPos): number {
+  const lines = text.split('\n');
+  const lineIndex = clamp(cursor.lineIndex, 0, Math.max(lines.length - 1, 0));
+  let offset = 0;
+
+  for (let i = 0; i < lineIndex; i++) {
+    offset += (lines[i] ?? '').length + 1;
+  }
+
+  const line = lines[lineIndex] ?? '';
+  return offset + clamp(cursor.charOffset, 0, line.length);
+}
+
+function textOffsetToCursor(text: string, offset: number): CursorPos {
+  const safeOffset = clamp(offset, 0, text.length);
+  const before = text.slice(0, safeOffset);
+  const parts = before.split('\n');
+  const last = parts[parts.length - 1] ?? '';
+
+  return {
+    lineIndex: parts.length - 1,
+    charOffset: last.length,
+  };
+}
+
+function replaceFirstOccurrence(
+  text: string,
+  search: string,
+  replacement: string,
+): { text: string; index: number } | null {
+  const index = text.indexOf(search);
+  if (index === -1) return null;
+
+  return {
+    text: text.slice(0, index) + replacement + text.slice(index + search.length),
+    index,
+  };
+}
+
+function adjustSelectionForReplacement(
+  text: string,
+  nextText: string,
+  selection: EditorSelectionState,
+  start: number,
+  removedLength: number,
+  insertedLength: number,
+): EditorSelectionState {
+  if (!selection) return null;
+
+  const end = start + removedLength;
+  const adjustOffset = (offset: number) => {
+    if (offset <= start) return offset;
+    if (offset >= end) return offset + insertedLength - removedLength;
+    return start + insertedLength;
+  };
+
+  if ('start' in selection) {
+    const startOffset = cursorToTextOffset(text, selection.start);
+    const endOffset = cursorToTextOffset(text, selection.end);
+    return {
+      start: textOffsetToCursor(nextText, adjustOffset(startOffset)),
+      end: textOffsetToCursor(nextText, adjustOffset(endOffset)),
+      collapsed: selection.collapsed,
+    };
+  }
+
+  const offset = cursorToTextOffset(text, selection);
+  return textOffsetToCursor(nextText, adjustOffset(offset));
+}
+
+function createImageMarkdown(alt: string, url: string): string {
+  return `![${alt}](${url})`;
+}
+
+function getDocumentEndCursor(text: string): CursorPos {
+  const lines = text.split('\n');
+  const lineIndex = Math.max(lines.length - 1, 0);
+  return {
+    lineIndex,
+    charOffset: (lines[lineIndex] ?? '').length,
+  };
+}
+
+function loadImageSize(src: string): Promise<ImageSize> {
+  return new Promise((resolve, reject) => {
+    const img = new window.Image();
+    img.decoding = 'async';
+    img.onload = () => {
+      if (img.naturalWidth > 0 && img.naturalHeight > 0) {
+        resolve({
+          width: img.naturalWidth,
+          height: img.naturalHeight,
+        });
+        return;
+      }
+      reject(new Error(`Could not measure image: ${src}`));
+    };
+    img.onerror = () => reject(new Error(`Could not load image: ${src}`));
+    img.src = src;
+  });
+}
+
+function safeRevokeObjectURL(url: string): void {
+  if (!url.startsWith('blob:')) return;
+  URL.revokeObjectURL(url);
+}
+
 export function MarkdownEditor({
   value,
   defaultValue = '',
@@ -369,6 +522,9 @@ export function MarkdownEditor({
   const wrapperRef = useRef<HTMLDivElement>(null);
   const rawRef = useRef<string>(value ?? defaultValue);
   const renderedLinesRef = useRef<string[]>([]);
+  const renderCacheRef = useRef<NonNullable<MarkdownRenderOptions['cache']>>(
+    createRenderCache(),
+  );
   const historyRef = useRef<HistoryState>({
     past: [],
     present: createHistoryEntry(value ?? defaultValue, null),
@@ -377,6 +533,8 @@ export function MarkdownEditor({
     lastAt: 0,
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const imageSizeCacheRef = useRef<Map<string, ImageSize>>(new Map());
+  const tempObjectUrlsRef = useRef<Set<string>>(new Set());
   const [stats, setStats] = useState<{ words: number; chars: number }>({
     words: 0,
     chars: 0,
@@ -399,6 +557,29 @@ export function MarkdownEditor({
   }, []);
 
   // ── Helpers ─────────────────────────────────────────
+
+  const cacheImageSize = useCallback((sources: Array<string | null | undefined>, size: ImageSize) => {
+    const width = Math.round(size.width);
+    const height = Math.round(size.height);
+    if (width <= 0 || height <= 0) return;
+
+    const cache = imageSizeCacheRef.current;
+    sources.forEach((source) => {
+      if (!source) return;
+      const previous = cache.get(source);
+      if (previous?.width === width && previous.height === height) return;
+      cache.set(source, { width, height });
+    });
+  }, []);
+
+  const getCachedImageSize = useCallback(
+    (url: string, displaySrc: string, previewSrc: string) =>
+      imageSizeCacheRef.current.get(url) ??
+      imageSizeCacheRef.current.get(displaySrc) ??
+      imageSizeCacheRef.current.get(previewSrc) ??
+      null,
+    [],
+  );
 
   const resetHistory = useCallback(
     (text: string, selection: EditorSelectionState) => {
@@ -439,6 +620,8 @@ export function MarkdownEditor({
     ) => {
       const nextRenderedLines = renderMarkdownLines(text, {
         resolveImageSource,
+        getImageSize: getCachedImageSize,
+        cache: renderCacheRef.current,
       });
       const patched = patchRenderedLines(
         el,
@@ -459,7 +642,7 @@ export function MarkdownEditor({
       }
       updateStats(text);
     },
-    [resolveImageSource, updateStats],
+    [getCachedImageSize, resolveImageSource, updateStats],
   );
 
   const writeEditor = useCallback(
@@ -477,6 +660,22 @@ export function MarkdownEditor({
       }
     },
     [applyHTML, onChange],
+  );
+
+  const replacePresent = useCallback(
+    (
+      text: string,
+      selection: EditorSelectionState,
+      emitChange = true,
+    ) => {
+      const history = historyRef.current;
+      history.present = createHistoryEntry(text, selection);
+      history.future = [];
+      history.lastKind = 'none';
+      history.lastAt = 0;
+      writeEditor(text, selection, emitChange);
+    },
+    [writeEditor],
   );
 
   const recordHistoryChange = useCallback(
@@ -587,6 +786,42 @@ export function MarkdownEditor({
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [closeImagePreview, imagePreview]);
+
+  useEffect(() => {
+    const el = editorRef.current;
+    if (!el) return;
+
+    const handleImageLoad = (event: Event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLImageElement)) return;
+      if (!target.classList.contains('orot-md-image-preview__img')) return;
+      if (target.naturalWidth <= 0 || target.naturalHeight <= 0) return;
+
+      const imageRoot = target.closest<HTMLElement>('.orot-md-image');
+      cacheImageSize(
+        [
+          imageRoot?.dataset.imageSrc,
+          imageRoot?.dataset.imagePreviewSrc,
+          target.currentSrc || target.getAttribute('src'),
+        ],
+        {
+          width: target.naturalWidth,
+          height: target.naturalHeight,
+        },
+      );
+    };
+
+    el.addEventListener('load', handleImageLoad, true);
+    return () => el.removeEventListener('load', handleImageLoad, true);
+  }, [cacheImageSize]);
+
+  useEffect(
+    () => () => {
+      tempObjectUrlsRef.current.forEach((url) => safeRevokeObjectURL(url));
+      tempObjectUrlsRef.current.clear();
+    },
+    [],
+  );
 
   // ── Initialize ───────────────────────────────────────
 
@@ -855,8 +1090,12 @@ export function MarkdownEditor({
     (text: string, selectInserted = false) => {
       const el = editorRef.current;
       if (!el) return;
-      const sel = saveSelection(el);
-      if (!sel) return;
+      const sel =
+        saveSelection(el) ?? {
+          start: getDocumentEndCursor(rawRef.current),
+          end: getDocumentEndCursor(rawRef.current),
+          collapsed: true,
+        };
       const lines = rawRef.current.split('\n');
       const lineIdx = sel.start.lineIndex;
       const line = lines[lineIdx] ?? '';
@@ -1526,39 +1765,104 @@ export function MarkdownEditor({
 
   // ── Drag-and-drop images ─────────────────────────────
 
-  const insertImage = useCallback(
-    async (file: File) => {
+  const captureEditorSelectionState = useCallback((): EditorSelectionState => {
+    const el = editorRef.current;
+    if (!el) return null;
+
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) return null;
+
+    const range = selection.getRangeAt(0);
+    if (!el.contains(range.startContainer) || !el.contains(range.endContainer)) {
+      return null;
+    }
+
+    return selection.isCollapsed ? saveCursor(el) : saveSelection(el);
+  }, []);
+
+  const replaceImageUrl = useCallback(
+    (tempUrl: string, nextUrl: string) => {
+      const currentText = rawRef.current;
+      const replacement = replaceFirstOccurrence(currentText, tempUrl, nextUrl);
+      tempObjectUrlsRef.current.delete(tempUrl);
+
+      if (!replacement) {
+        safeRevokeObjectURL(tempUrl);
+        return false;
+      }
+
+      const selection = captureEditorSelectionState();
+      const nextSelection = adjustSelectionForReplacement(
+        currentText,
+        replacement.text,
+        selection,
+        replacement.index,
+        tempUrl.length,
+        nextUrl.length,
+      );
+
+      replacePresent(replacement.text, nextSelection, true);
+      safeRevokeObjectURL(tempUrl);
+      return true;
+    },
+    [captureEditorSelectionState, replacePresent],
+  );
+
+  const insertImages = useCallback(
+    (files: File[]) => {
       const el = editorRef.current;
       if (!el) return;
-      const url = onImageUpload
-        ? await onImageUpload(file)
-        : await fileToDataURL(file);
-      const cursor = saveCursor(el);
-      const insertion = `![${file.name}](${url})`;
-      const lines = rawRef.current.split('\n');
-      const lineIdx = cursor?.lineIndex ?? 0;
-      const line = lines[lineIdx] ?? '';
-      const co = cursor?.charOffset ?? line.length;
-      lines[lineIdx] = line.slice(0, co) + insertion + line.slice(co);
-      commit(lines.join('\n'), {
-        lineIndex: lineIdx,
-        charOffset: co + insertion.length,
+
+      const imageFiles = files.filter((file) => file.type.startsWith('image/'));
+      if (imageFiles.length === 0) return;
+
+      const uploads = imageFiles.map((file) => {
+        const tempUrl = URL.createObjectURL(file);
+        tempObjectUrlsRef.current.add(tempUrl);
+        void loadImageSize(tempUrl)
+          .then((size) => cacheImageSize([tempUrl], size))
+          .catch(() => {});
+
+        return {
+          file,
+          tempUrl,
+          insertion: createImageMarkdown(file.name, tempUrl),
+        };
       });
+
+      insertAtCursor(uploads.map((item) => item.insertion).join(''));
       el.focus();
+
+      uploads.forEach(({ file, tempUrl }) => {
+        void (async () => {
+          try {
+            const finalUrl = onImageUpload
+              ? await onImageUpload(file)
+              : await fileToDataURL(file);
+            const cachedSize = imageSizeCacheRef.current.get(tempUrl);
+            if (cachedSize) {
+              cacheImageSize([finalUrl], cachedSize);
+            }
+            replaceImageUrl(tempUrl, finalUrl);
+          } catch (error) {
+            console.error('MarkdownEditor image upload failed.', error);
+          }
+        })();
+      });
     },
-    [commit, onImageUpload],
+    [cacheImageSize, insertAtCursor, onImageUpload, replaceImageUrl],
   );
 
   const handleDrop = useCallback(
-    async (e: React.DragEvent<HTMLDivElement>) => {
+    (e: React.DragEvent<HTMLDivElement>) => {
       const files = Array.from(e.dataTransfer.files).filter((f) =>
         f.type.startsWith('image/'),
       );
       if (!files.length) return;
       e.preventDefault();
-      for (const file of files) await insertImage(file);
+      insertImages(files);
     },
-    [insertImage],
+    [insertImages],
   );
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -1570,13 +1874,15 @@ export function MarkdownEditor({
   const handleImageToolbar = () => fileInputRef.current?.click();
 
   const handleFileInput = useCallback(
-    async (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const files = Array.from(e.target.files ?? []).filter((file) =>
+        file.type.startsWith('image/'),
+      );
       e.target.value = '';
-      await insertImage(file);
+      if (!files.length) return;
+      insertImages(files);
     },
-    [insertImage],
+    [insertImages],
   );
 
   // ── Floating selection toolbar ───────────────────────
@@ -1937,6 +2243,7 @@ export function MarkdownEditor({
         ref={fileInputRef}
         type="file"
         accept="image/*"
+        multiple
         style={{ display: 'none' }}
         onChange={handleFileInput}
       />

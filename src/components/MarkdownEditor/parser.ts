@@ -24,6 +24,16 @@ const HASHTAG_RE = /^[\p{L}\p{N}][\p{L}\p{N}_-]*/u;
 
 export interface MarkdownRenderOptions {
   resolveImageSource?: MarkdownEditorResolveImageSource;
+  getImageSize?: (
+    url: string,
+    displaySrc: string,
+    previewSrc: string,
+    alt: string,
+  ) => { width: number; height: number } | null | undefined;
+  cache?: {
+    get: (key: string) => string[] | undefined;
+    set: (key: string, lines: string[]) => void;
+  };
 }
 
 function isWordBoundary(ch: string | undefined): boolean {
@@ -130,13 +140,23 @@ export function parseInline(
           const resolved = options.resolveImageSource?.(url, alt);
           const displaySrc = resolved?.displaySrc || url;
           const previewSrc = resolved?.previewSrc || url;
+          const cachedSize = options.getImageSize?.(
+            url,
+            displaySrc,
+            previewSrc,
+            alt,
+          );
           const width =
             typeof resolved?.width === 'number' && resolved.width > 0
               ? Math.round(resolved.width)
+              : typeof cachedSize?.width === 'number' && cachedSize.width > 0
+                ? Math.round(cachedSize.width)
               : null;
           const height =
             typeof resolved?.height === 'number' && resolved.height > 0
               ? Math.round(resolved.height)
+              : typeof cachedSize?.height === 'number' && cachedSize.height > 0
+                ? Math.round(cachedSize.height)
               : null;
           const dimensionAttrs =
             width !== null && height !== null
@@ -402,135 +422,198 @@ function isTableRow(line: string): boolean {
   return true;
 }
 
+function renderSingleMarkdownLine(
+  line: string,
+  options: MarkdownRenderOptions,
+): string {
+  const headingMatch = line.match(/^(#{1,6}) (.*)$/);
+  if (headingMatch) {
+    const level = headingMatch[1].length;
+    const content = headingMatch[2];
+    return `<div class="orot-md-line orot-md-h${level}"><span class="orot-md-syntax orot-md-heading-marker">${esc(headingMatch[1])} </span>${parseInline(content, options)}</div>`;
+  }
+
+  if (line.startsWith('> ') || line === '>') {
+    const content = line.startsWith('> ') ? line.slice(2) : '';
+    return `<div class="orot-md-line orot-md-blockquote"><span class="orot-md-syntax">&gt; </span>${parseInline(content, options)}</div>`;
+  }
+
+  const taskMatch = line.match(/^(\s*)-\s\[([ xX])\] (.*)$/);
+  if (taskMatch) {
+    const indent = taskMatch[1];
+    const checked = taskMatch[2].toLowerCase() === 'x';
+    const content = taskMatch[3];
+    const depthClass = `orot-md-list--depth-${Math.min(Math.floor(indent.length / 2), 3)}`;
+    return `<div class="orot-md-line orot-md-task ${depthClass}${checked ? ' orot-md-task--done' : ''}"><span class="orot-md-syntax orot-md-task-prefix">${esc(indent)}- </span><span class="orot-md-task-toggle orot-md-syntax" role="checkbox" aria-checked="${checked}">[${esc(taskMatch[2])}]</span><span class="orot-md-syntax"> </span>${parseInline(content, options)}</div>`;
+  }
+
+  const ulMatch = line.match(/^(\s*)[-*+] (.*)$/);
+  if (ulMatch) {
+    const indent = ulMatch[1];
+    const depthClass = `orot-md-list--depth-${Math.min(Math.floor(indent.length / 2), 3)}`;
+    return `<div class="orot-md-line orot-md-list ${depthClass}"><span class="orot-md-syntax">${esc(indent)}- </span>${parseInline(ulMatch[2], options)}</div>`;
+  }
+
+  const olMatch = line.match(/^(\s*)(\d+)\. (.*)$/);
+  if (olMatch) {
+    const indent = olMatch[1];
+    const num = olMatch[2];
+    return `<div class="orot-md-line orot-md-list-ordered"><span class="orot-md-syntax">${esc(indent)}${esc(num)}. </span>${parseInline(olMatch[3], options)}</div>`;
+  }
+
+  if (line.match(/^(---|\*\*\*|___)$/)) {
+    return `<div class="orot-md-line orot-md-hr" aria-hidden="true"><span class="orot-md-syntax">${esc(line)}</span></div>`;
+  }
+
+  if (line === '') {
+    return '<div class="orot-md-line"><br></div>';
+  }
+
+  return `<div class="orot-md-line">${parseInline(line, options)}</div>`;
+}
+
+function renderCodeBlock(
+  lines: string[],
+): string[] {
+  const rendered: string[] = [];
+  const startLine = lines[0];
+  if (startLine === undefined) return rendered;
+
+  const codeLang = startLine.slice(3).trim();
+  const langAttr = codeLang ? ` data-lang="${escAttr(codeLang)}"` : '';
+  rendered.push(
+    `<div class="orot-md-line orot-md-code-fence-start"${langAttr}><span class="orot-md-code-line">${esc(startLine)}</span></div>`,
+  );
+
+  const hasClosingFence =
+    lines.length > 1 && lines[lines.length - 1]?.startsWith('```');
+  const codeLines = hasClosingFence ? lines.slice(1, -1) : lines.slice(1);
+
+  codeLines.forEach((line, index) => {
+    const firstClass = index === 0 ? ' orot-md-code-content--first' : '';
+    const firstLangAttr = index === 0 && codeLang ? ` data-lang="${escAttr(codeLang)}"` : '';
+    rendered.push(
+      `<div class="orot-md-line orot-md-code-content${firstClass}"${firstLangAttr}><span class="orot-md-code-line">${highlightCodeLine(line, codeLang)}</span></div>`,
+    );
+  });
+
+  if (hasClosingFence) {
+    rendered.push(
+      `<div class="orot-md-line orot-md-code-fence-end"><span class="orot-md-code-line">${esc(lines[lines.length - 1] ?? '')}</span></div>`,
+    );
+  }
+
+  return rendered;
+}
+
+function renderTableBlock(
+  lines: string[],
+  options: MarkdownRenderOptions,
+): string[] {
+  if (lines.length < 2) {
+    return lines.map((line) => renderSingleMarkdownLine(line, options));
+  }
+
+  const [header, separator, ...body] = lines;
+  return [
+    renderTableRow(header ?? '', 'header'),
+    renderTableRow(separator ?? '', 'sep'),
+    ...body.map((line) => renderTableRow(line, 'body')),
+  ];
+}
+
+function getCacheKey(kind: string, lines: string[]): string | null {
+  if (lines.some((line) => line.includes('!['))) {
+    return null;
+  }
+
+  return `${kind}\u0000${lines.join('\n')}`;
+}
+
+function renderCachedBlock(
+  kind: string,
+  lines: string[],
+  options: MarkdownRenderOptions,
+  render: () => string[],
+): string[] {
+  const key = getCacheKey(kind, lines);
+  if (key && options.cache) {
+    const cached = options.cache.get(key);
+    if (cached) {
+      return cached.slice();
+    }
+  }
+
+  const rendered = render();
+
+  if (key && options.cache) {
+    options.cache.set(key, rendered);
+  }
+
+  return rendered;
+}
+
 export function renderMarkdownLines(
   rawText: string,
   options: MarkdownRenderOptions = {},
 ): string[] {
   const lines = rawText.split('\n');
   const rendered: string[] = [];
-  let inCodeBlock = false;
-  let codeLang = '';
-  let codeFirstLine = false;
+  for (let idx = 0; idx < lines.length;) {
+    const line = lines[idx] ?? '';
 
-  for (let idx = 0; idx < lines.length; idx++) {
-    const line = lines[idx];
-    // Code fence toggle
     if (line.startsWith('```')) {
-      if (inCodeBlock) {
-        inCodeBlock = false;
-        codeLang = '';
-        codeFirstLine = false;
-        rendered.push(
-          `<div class="orot-md-line orot-md-code-fence-end"><span class="orot-md-code-line">${esc(line)}</span></div>`,
-        );
-      } else {
-        inCodeBlock = true;
-        codeLang = line.slice(3).trim();
-        codeFirstLine = true;
-        const langAttr = codeLang ? ` data-lang="${escAttr(codeLang)}"` : '';
-        rendered.push(
-          `<div class="orot-md-line orot-md-code-fence-start"${langAttr}><span class="orot-md-code-line">${esc(line)}</span></div>`,
-        );
-      }
-      continue;
-    }
+      const start = idx;
+      idx++;
 
-    // Inside code block
-    if (inCodeBlock) {
-      const firstClass = codeFirstLine ? ' orot-md-code-content--first' : '';
-      const langAttr = codeFirstLine && codeLang ? ` data-lang="${escAttr(codeLang)}"` : '';
-      codeFirstLine = false;
-      const highlighted = highlightCodeLine(line, codeLang);
-      rendered.push(
-        `<div class="orot-md-line orot-md-code-content${firstClass}"${langAttr}><span class="orot-md-code-line">${highlighted}</span></div>`,
-      );
-      continue;
-    }
-
-    // Table block
-    if (isTableRow(line) && idx + 1 < lines.length && isTableSeparator(lines[idx + 1])) {
-      rendered.push(renderTableRow(line, 'header'));
-      rendered.push(renderTableRow(lines[idx + 1], 'sep'));
-      idx += 2;
-      while (idx < lines.length && isTableRow(lines[idx]) && !isTableSeparator(lines[idx])) {
-        rendered.push(renderTableRow(lines[idx], 'body'));
+      while (idx < lines.length && !(lines[idx] ?? '').startsWith('```')) {
         idx++;
       }
-      idx--;
-      continue;
-    }
 
-    // Heading
-    const headingMatch = line.match(/^(#{1,6}) (.*)$/);
-    if (headingMatch) {
-      const level = headingMatch[1].length;
-      const content = headingMatch[2];
+      if (idx < lines.length) {
+        idx++;
+      }
+
+      const blockLines = lines.slice(start, idx);
       rendered.push(
-        `<div class="orot-md-line orot-md-h${level}"><span class="orot-md-syntax orot-md-heading-marker">${esc(headingMatch[1])} </span>${parseInline(content, options)}</div>`,
+        ...renderCachedBlock('code', blockLines, options, () =>
+          renderCodeBlock(blockLines),
+        ),
       );
       continue;
     }
 
-    // Blockquote
-    if (line.startsWith('> ') || line === '>') {
-      const content = line.startsWith('> ') ? line.slice(2) : '';
+    if (
+      isTableRow(line) &&
+      idx + 1 < lines.length &&
+      isTableSeparator(lines[idx + 1] ?? '')
+    ) {
+      const start = idx;
+      idx += 2;
+
+      while (
+        idx < lines.length &&
+        isTableRow(lines[idx] ?? '') &&
+        !isTableSeparator(lines[idx] ?? '')
+      ) {
+        idx++;
+      }
+
+      const blockLines = lines.slice(start, idx);
       rendered.push(
-        `<div class="orot-md-line orot-md-blockquote"><span class="orot-md-syntax">&gt; </span>${parseInline(content, options)}</div>`,
+        ...renderCachedBlock('table', blockLines, options, () =>
+          renderTableBlock(blockLines, options),
+        ),
       );
       continue;
     }
 
-    // Task list
-    const taskMatch = line.match(/^(\s*)-\s\[([ xX])\] (.*)$/);
-    if (taskMatch) {
-      const indent = taskMatch[1];
-      const checked = taskMatch[2].toLowerCase() === 'x';
-      const content = taskMatch[3];
-      const depthClass = `orot-md-list--depth-${Math.min(Math.floor(indent.length / 2), 3)}`;
-      rendered.push(
-        `<div class="orot-md-line orot-md-task ${depthClass}${checked ? ' orot-md-task--done' : ''}"><span class="orot-md-syntax orot-md-task-prefix">${esc(indent)}- </span><span class="orot-md-task-toggle orot-md-syntax" role="checkbox" aria-checked="${checked}">[${esc(taskMatch[2])}]</span><span class="orot-md-syntax"> </span>${parseInline(content, options)}</div>`,
-      );
-      continue;
-    }
-
-    // Unordered list
-    const ulMatch = line.match(/^(\s*)[-*+] (.*)$/);
-    if (ulMatch) {
-      const indent = ulMatch[1];
-      const depthClass = `orot-md-list--depth-${Math.min(Math.floor(indent.length / 2), 3)}`;
-      rendered.push(
-        `<div class="orot-md-line orot-md-list ${depthClass}"><span class="orot-md-syntax">${esc(indent)}- </span>${parseInline(ulMatch[2], options)}</div>`,
-      );
-      continue;
-    }
-
-    // Ordered list
-    const olMatch = line.match(/^(\s*)(\d+)\. (.*)$/);
-    if (olMatch) {
-      const indent = olMatch[1];
-      const num = olMatch[2];
-      rendered.push(
-        `<div class="orot-md-line orot-md-list-ordered"><span class="orot-md-syntax">${esc(indent)}${esc(num)}. </span>${parseInline(olMatch[3], options)}</div>`,
-      );
-      continue;
-    }
-
-    // Horizontal rule
-    if (line.match(/^(---|\*\*\*|___)$/)) {
-      rendered.push(
-        `<div class="orot-md-line orot-md-hr" aria-hidden="true"><span class="orot-md-syntax">${esc(line)}</span></div>`,
-      );
-      continue;
-    }
-
-    // Empty line
-    if (line === '') {
-      rendered.push('<div class="orot-md-line"><br></div>');
-      continue;
-    }
-
-    // Regular paragraph
-    rendered.push(`<div class="orot-md-line">${parseInline(line, options)}</div>`);
+    rendered.push(
+      ...renderCachedBlock('line', [line], options, () => [
+        renderSingleMarkdownLine(line, options),
+      ]),
+    );
+    idx++;
   }
 
   return rendered;
