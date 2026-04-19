@@ -118,7 +118,7 @@ export function parseInline(raw: string): string {
         if (urlEnd !== -1) {
           const alt = raw.slice(i + 2, altEnd);
           const url = raw.slice(altEnd + 2, urlEnd);
-          result += `<span class="orot-md-image"><span class="orot-md-image-token orot-md-syntax">![${esc(alt)}](${esc(url)})</span><span class="orot-md-image-preview" contenteditable="false"><img src="${escAttr(url)}" alt="${escAttr(alt)}" class="orot-md-image-preview__img" loading="lazy" /></span></span>`;
+          result += `<span class="orot-md-image"><span class="orot-md-image-token orot-md-syntax">![${esc(alt)}](${esc(url)})</span><span class="orot-md-image-preview" contenteditable="false"><img src="${escAttr(url)}" alt="${escAttr(alt)}" class="orot-md-image-preview__img" loading="eager" decoding="async" draggable="false" /></span></span>`;
           i = urlEnd + 1;
           continue;
         }

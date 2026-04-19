@@ -15,6 +15,8 @@ export interface MarkdownEditorProps {
   showToolbar?: boolean;
   /** Show floating toolbar when text is selected */
   showFloatingToolbar?: boolean;
+  /** Enable slash-command menu (type `/` at start of line or after whitespace) */
+  showSlashMenu?: boolean;
   /** Show word / char count in footer */
   showWordCount?: boolean;
   /** Minimum editor height (CSS value or number → px) */

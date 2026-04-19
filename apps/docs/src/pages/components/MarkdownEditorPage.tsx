@@ -160,6 +160,27 @@ export default function MarkdownEditorPage() {
       </Example>
 
       <Example
+        title="슬래시 커맨드 (/ 입력)"
+        code={`<MarkdownEditor defaultValue="새 줄에서 / 를 입력해 보세요" />`}
+      >
+        <MarkdownEditor
+          defaultValue={`# 슬래시 커맨드로 빠르게 삽입\n\n긴 글을 쓰다가 위 툴바까지 올라가지 않아도 됩니다. **새 줄에서 \`/\` 를 입력**하면 커서 위치에 메뉴가 열려요.\n\n- \`/heading\`, \`/제목\` 으로 제목 삽입\n- \`/task\`, \`/할일\` 로 체크리스트\n- \`/code\`, \`/table\`, \`/image\`, \`/link\` 지원\n- \`↑ ↓\` 로 이동, \`Enter\` 또는 \`Tab\` 으로 선택, \`Esc\` 로 닫기\n\n아래 빈 줄에서 직접 시도해 보세요 👇\n\n`}
+          minHeight={320}
+        />
+      </Example>
+
+      <Example
+        title="슬래시 메뉴 비활성화"
+        code={`<MarkdownEditor showSlashMenu={false} />`}
+      >
+        <MarkdownEditor
+          showSlashMenu={false}
+          defaultValue={`# 슬래시 메뉴 없음\n\n\`/\` 를 입력해도 메뉴가 열리지 않습니다.`}
+          minHeight={140}
+        />
+      </Example>
+
+      <Example
         title="플로팅 툴바 비활성화"
         code={`<MarkdownEditor showFloatingToolbar={false} />`}
       >
@@ -222,6 +243,13 @@ export default function MarkdownEditorPage() {
             type: 'boolean',
             default: 'true',
             description: '텍스트 선택 시 떠오르는 플로팅 서식 툴바 표시 여부',
+          },
+          {
+            name: 'showSlashMenu',
+            type: 'boolean',
+            default: 'true',
+            description:
+              '줄 시작 또는 공백 뒤에 `/` 를 입력하면 커서 위치에 블록 삽입 메뉴 표시',
           },
           {
             name: 'showWordCount',
@@ -299,7 +327,8 @@ export default function MarkdownEditorPage() {
         <br />
         · 체크박스 <code>[ ]</code>/<code>[x]</code> 클릭으로 완료 토글 · 이미지
         드래그 앤 드롭 · 선택 영역 위에 URL 붙여넣기 →{' '}
-        <code>[선택](url)</code> 자동 변환 · 텍스트 선택 시 플로팅 툴바 표시
+        <code>[선택](url)</code> 자동 변환 · 텍스트 선택 시 플로팅 툴바 표시 ·{' '}
+        <code>/</code> 입력 시 커서 위치에 슬래시 커맨드 메뉴 표시
       </div>
     </DocPage>
   );
