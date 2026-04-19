@@ -210,6 +210,132 @@ export function findImageRangeForDeletion(
   return null;
 }
 
+// ── Code block syntax highlighter ─────────────────────
+
+type TokenRule = { cls: string; re: RegExp };
+
+const STRING_RE: RegExp = /"(?:\\.|[^"\\\n])*"|'(?:\\.|[^'\\\n])*'|`(?:\\.|[^`\\])*`/y;
+const NUMBER_RE: RegExp = /\b\d+(?:\.\d+)?\b/y;
+
+function rulesFor(lang: string): TokenRule[] {
+  const l = lang.toLowerCase();
+  if (['js', 'jsx', 'javascript', 'ts', 'tsx', 'typescript'].includes(l)) {
+    return [
+      { cls: 'com', re: /\/\/.*/y },
+      { cls: 'com', re: /\/\*[\s\S]*?\*\//y },
+      { cls: 'str', re: STRING_RE },
+      {
+        cls: 'kw',
+        re: /\b(?:const|let|var|function|return|if|else|for|while|do|switch|case|default|break|continue|new|this|class|extends|super|import|export|from|as|async|await|yield|try|catch|finally|throw|typeof|instanceof|in|of|delete|void|null|undefined|true|false|interface|type|enum|implements|public|private|protected|readonly|static)\b/y,
+      },
+      { cls: 'num', re: NUMBER_RE },
+      { cls: 'fn', re: /\b[A-Za-z_$][\w$]*(?=\s*\()/y },
+    ];
+  }
+  if (['html', 'xml', 'svg'].includes(l)) {
+    return [
+      { cls: 'com', re: /<!--[\s\S]*?-->/y },
+      { cls: 'tag', re: /<\/?[A-Za-z][\w-]*/y },
+      { cls: 'tag', re: /\/?>/y },
+      { cls: 'attr', re: /(?<=\s)[A-Za-z_:][\w.:-]*(?=\s*=)/y },
+      { cls: 'str', re: STRING_RE },
+    ];
+  }
+  if (['css', 'scss', 'less'].includes(l)) {
+    return [
+      { cls: 'com', re: /\/\*[\s\S]*?\*\//y },
+      { cls: 'kw', re: /@[A-Za-z-]+/y },
+      { cls: 'str', re: STRING_RE },
+      { cls: 'num', re: /\b\d+(?:\.\d+)?(?:px|em|rem|%|vh|vw|s|ms|deg)?\b/y },
+      { cls: 'attr', re: /[A-Za-z-]+(?=\s*:)/y },
+    ];
+  }
+  if (['shell', 'bash', 'sh', 'zsh'].includes(l)) {
+    return [
+      { cls: 'com', re: /#.*/y },
+      { cls: 'str', re: STRING_RE },
+      {
+        cls: 'kw',
+        re: /\b(?:if|then|else|elif|fi|for|do|done|while|case|esac|in|function|return|export|echo|cd|ls|rm|mkdir|cat|grep|sed|awk|source|alias|local|unset|set)\b/y,
+      },
+      { cls: 'fn', re: /\$\{[^}]+\}|\$[A-Za-z_][\w]*/y },
+      { cls: 'num', re: NUMBER_RE },
+    ];
+  }
+  if (['python', 'py'].includes(l)) {
+    return [
+      { cls: 'com', re: /#.*/y },
+      { cls: 'str', re: STRING_RE },
+      {
+        cls: 'kw',
+        re: /\b(?:def|class|return|if|elif|else|for|while|in|not|and|or|is|None|True|False|import|from|as|try|except|finally|raise|with|lambda|yield|pass|break|continue|async|await|global|nonlocal|assert)\b/y,
+      },
+      { cls: 'num', re: NUMBER_RE },
+      { cls: 'fn', re: /\b[A-Za-z_][\w]*(?=\s*\()/y },
+    ];
+  }
+  if (l === 'json') {
+    return [
+      { cls: 'str', re: STRING_RE },
+      { cls: 'kw', re: /\b(?:true|false|null)\b/y },
+      { cls: 'num', re: NUMBER_RE },
+    ];
+  }
+  if (['yaml', 'yml', 'toml'].includes(l)) {
+    return [
+      { cls: 'com', re: /#.*/y },
+      { cls: 'attr', re: /[A-Za-z_][\w-]*(?=\s*:)/y },
+      { cls: 'str', re: STRING_RE },
+      { cls: 'num', re: NUMBER_RE },
+      { cls: 'kw', re: /\b(?:true|false|null|yes|no|on|off)\b/y },
+    ];
+  }
+  if (['sql'].includes(l)) {
+    return [
+      { cls: 'com', re: /--.*/y },
+      { cls: 'str', re: STRING_RE },
+      {
+        cls: 'kw',
+        re: /\b(?:SELECT|FROM|WHERE|INSERT|INTO|VALUES|UPDATE|SET|DELETE|CREATE|TABLE|DROP|ALTER|JOIN|LEFT|RIGHT|INNER|OUTER|ON|AS|AND|OR|NOT|NULL|IS|IN|LIKE|ORDER|BY|GROUP|HAVING|LIMIT|OFFSET|DISTINCT|COUNT|SUM|AVG|MIN|MAX|CASE|WHEN|THEN|ELSE|END|UNION|INDEX|PRIMARY|KEY|FOREIGN|REFERENCES)\b/yi,
+      },
+      { cls: 'num', re: NUMBER_RE },
+    ];
+  }
+  // Generic fallback
+  return [
+    { cls: 'com', re: /\/\/.*/y },
+    { cls: 'com', re: /#.*/y },
+    { cls: 'str', re: STRING_RE },
+    { cls: 'num', re: NUMBER_RE },
+  ];
+}
+
+function highlightCodeLine(line: string, lang: string): string {
+  if (!line) return '\u200b';
+  const rules = rulesFor(lang || '');
+  let out = '';
+  let i = 0;
+  while (i < line.length) {
+    let matched = false;
+    for (const rule of rules) {
+      rule.re.lastIndex = i;
+      const m = rule.re.exec(line);
+      if (m && m.index === i && m[0].length > 0) {
+        out += `<span class="orot-md-tok-${rule.cls}">${esc(m[0])}</span>`;
+        i += m[0].length;
+        matched = true;
+        break;
+      }
+    }
+    if (!matched) {
+      const ch = line[i];
+      out += ch === '&' ? '&amp;' : ch === '<' ? '&lt;' : ch === '>' ? '&gt;' : ch;
+      i++;
+    }
+  }
+  return out;
+}
+
 // ── Block parser ──────────────────────────────────────
 
 function renderTableRow(line: string, lineIdx: number, kind: 'header' | 'sep' | 'body'): string {
@@ -255,6 +381,8 @@ function isTableRow(line: string): boolean {
 export function renderMarkdown(rawText: string): string {
   const lines = rawText.split('\n');
   let inCodeBlock = false;
+  let codeLang = '';
+  let codeFirstLine = false;
 
   // Pre-scan table ranges: a header row followed by a separator makes a table.
   const tableKind: Array<'header' | 'sep' | 'body' | null> = new Array(lines.length).fill(null);
@@ -282,18 +410,25 @@ export function renderMarkdown(rawText: string): string {
     if (line.startsWith('```')) {
       if (inCodeBlock) {
         inCodeBlock = false;
+        codeLang = '';
+        codeFirstLine = false;
         return `<div class="orot-md-line orot-md-code-fence-end" data-line="${idx}"><span class="orot-md-code-line">${esc(line)}</span></div>`;
       } else {
         inCodeBlock = true;
-        const lang = line.slice(3).trim();
-        const langAttr = lang ? ` data-lang="${escAttr(lang)}"` : '';
+        codeLang = line.slice(3).trim();
+        codeFirstLine = true;
+        const langAttr = codeLang ? ` data-lang="${escAttr(codeLang)}"` : '';
         return `<div class="orot-md-line orot-md-code-fence-start" data-line="${idx}"${langAttr}><span class="orot-md-code-line">${esc(line)}</span></div>`;
       }
     }
 
     // Inside code block
     if (inCodeBlock) {
-      return `<div class="orot-md-line orot-md-code-content" data-line="${idx}"><span class="orot-md-code-line">${esc(line) || '\u200b'}</span></div>`;
+      const firstClass = codeFirstLine ? ' orot-md-code-content--first' : '';
+      const langAttr = codeFirstLine && codeLang ? ` data-lang="${escAttr(codeLang)}"` : '';
+      codeFirstLine = false;
+      const highlighted = highlightCodeLine(line, codeLang);
+      return `<div class="orot-md-line orot-md-code-content${firstClass}" data-line="${idx}"${langAttr}><span class="orot-md-code-line">${highlighted}</span></div>`;
     }
 
     // Heading

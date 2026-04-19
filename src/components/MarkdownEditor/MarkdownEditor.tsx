@@ -66,6 +66,7 @@ export function MarkdownEditor({
     chars: 0,
   });
   const [isEmpty, setIsEmpty] = useState(!rawRef.current);
+  const [isFocused, setIsFocused] = useState(false);
   const [floatingPos, setFloatingPos] = useState<
     { top: number; left: number } | null
   >(null);
@@ -441,39 +442,46 @@ export function MarkdownEditor({
         const after = line.slice(cursor.charOffset);
 
         let newPrefix = '';
+        let exitingList = false;
         const taskMatch = line.match(/^(\s*)-\s\[[ xX]\] /);
         const ulMatch = line.match(/^(\s*)[-*+] /);
         const olMatch = line.match(/^(\s*)(\d+)\. /);
 
         if (taskMatch) {
           if (line.trim() === taskMatch[0].trim()) {
-            lines[cursor.lineIndex] = '';
+            exitingList = true;
           } else {
             newPrefix = `${taskMatch[1]}- [ ] `;
           }
         } else if (ulMatch) {
           if (line.trim() === ulMatch[0].trim()) {
-            lines[cursor.lineIndex] = '';
+            exitingList = true;
           } else {
             newPrefix = `${ulMatch[1]}- `;
           }
         } else if (olMatch) {
           if (line.trim() === olMatch[0].trim()) {
-            lines[cursor.lineIndex] = '';
+            exitingList = true;
           } else {
             newPrefix = `${olMatch[1]}${parseInt(olMatch[2]) + 1}. `;
           }
         }
 
-        if (lines[cursor.lineIndex] !== '') {
+        if (exitingList) {
+          // Drop the empty list marker; keep cursor on the now-blank line.
+          lines[cursor.lineIndex] = '';
+          commit(lines.join('\n'), {
+            lineIndex: cursor.lineIndex,
+            charOffset: 0,
+          });
+        } else {
           lines[cursor.lineIndex] = before;
           lines.splice(cursor.lineIndex + 1, 0, newPrefix + after);
+          commit(lines.join('\n'), {
+            lineIndex: cursor.lineIndex + 1,
+            charOffset: newPrefix.length,
+          });
         }
-
-        commit(lines.join('\n'), {
-          lineIndex: cursor.lineIndex + 1,
-          charOffset: newPrefix.length,
-        });
         return;
       }
 
@@ -857,8 +865,21 @@ export function MarkdownEditor({
 
   return (
     <div
-      className={['orot-md-editor', className].filter(Boolean).join(' ')}
+      className={[
+        'orot-md-editor',
+        readOnly && 'orot-md-editor--readonly',
+        (readOnly || !isFocused) && 'orot-md-editor--preview',
+        className,
+      ]
+        .filter(Boolean)
+        .join(' ')}
       style={style}
+      onFocus={() => setIsFocused(true)}
+      onBlur={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+          setIsFocused(false);
+        }
+      }}
     >
       {showToolbar && !readOnly && (
         <div className="orot-md-toolbar" role="toolbar" aria-label="Formatting toolbar">

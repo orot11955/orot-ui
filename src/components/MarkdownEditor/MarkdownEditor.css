@@ -121,6 +121,7 @@
     opacity: 0;
     transform: translateX(-50%) translateY(4px);
   }
+
   to {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
@@ -310,12 +311,25 @@
   display: block;
 }
 
-.orot-md-list--depth-0 { padding-left: var(--orot-space-4); }
-.orot-md-list--depth-1 { padding-left: calc(var(--orot-space-4) * 2); }
-.orot-md-list--depth-2 { padding-left: calc(var(--orot-space-4) * 3); }
-.orot-md-list--depth-3 { padding-left: calc(var(--orot-space-4) * 4); }
+.orot-md-list--depth-0 {
+  padding-left: var(--orot-space-4);
+}
 
-.orot-md-list-ordered { padding-left: var(--orot-space-4); }
+.orot-md-list--depth-1 {
+  padding-left: calc(var(--orot-space-4) * 2);
+}
+
+.orot-md-list--depth-2 {
+  padding-left: calc(var(--orot-space-4) * 3);
+}
+
+.orot-md-list--depth-3 {
+  padding-left: calc(var(--orot-space-4) * 4);
+}
+
+.orot-md-list-ordered {
+  padding-left: var(--orot-space-4);
+}
 
 /* Task list */
 .orot-md-task {
@@ -358,7 +372,7 @@
 
 .orot-md-code-fence-start {
   padding: var(--orot-space-2) var(--orot-space-4) var(--orot-space-1);
-  border-radius: var(--orot-radius-sm) var(--orot-radius-sm) 0 0;
+  border-radius: var(--orot-radius-md) var(--orot-radius-md) 0 0;
   position: relative;
 }
 
@@ -377,16 +391,64 @@
 
 .orot-md-code-fence-end {
   padding: var(--orot-space-1) var(--orot-space-4) var(--orot-space-2);
-  border-radius: 0 0 var(--orot-radius-sm) var(--orot-radius-sm);
+  border-radius: 0 0 var(--orot-radius-md) var(--orot-radius-md);
 }
 
 .orot-md-code-content {
   padding: 0 var(--orot-space-4);
 }
 
+.orot-md-code-content--first {
+  position: relative;
+}
+
+.orot-md-code-content--first[data-lang]::after {
+  content: attr(data-lang);
+  position: absolute;
+  top: 2px;
+  right: var(--orot-space-3);
+  font-size: var(--orot-font-size-xs);
+  letter-spacing: 0.05em;
+  color: var(--orot-color-text-muted);
+  text-transform: uppercase;
+  pointer-events: none;
+  user-select: none;
+}
+
 .orot-md-code-line {
   display: block;
   white-space: pre-wrap;
+}
+
+/* Syntax highlight tokens inside code blocks */
+.orot-md-tok-kw {
+  color: var(--orot-color-info, #1a5fa8);
+  font-weight: var(--orot-font-weight-medium);
+}
+
+.orot-md-tok-str {
+  color: var(--orot-color-success, #27704a);
+}
+
+.orot-md-tok-num {
+  color: var(--orot-color-warning, #8a6000);
+}
+
+.orot-md-tok-com {
+  color: var(--orot-color-text-muted);
+  font-style: italic;
+}
+
+.orot-md-tok-fn {
+  color: var(--orot-color-info, #1a5fa8);
+}
+
+.orot-md-tok-tag {
+  color: var(--orot-color-error, #c0392b);
+}
+
+.orot-md-tok-attr {
+  color: var(--orot-color-warning, #8a6000);
 }
 
 /* ── Table (pipe tables) ─────────────────────────────── */
@@ -429,7 +491,7 @@
 }
 
 .orot-md-table-row--body:last-of-type,
-.orot-md-table-row--body + :not(.orot-md-table-row--body) {
+.orot-md-table-row--body+ :not(.orot-md-table-row--body) {
   /* handled via structural selectors when possible */
 }
 
@@ -468,6 +530,123 @@
   height: 1px;
   background: var(--orot-color-border-strong);
   width: 100%;
+}
+
+/* ── Preview mode: readOnly OR editor not focused ── */
+/* Hides raw markdown syntax and renders decorations so the editor */
+/* looks like a rendered document when not being actively edited. */
+
+.orot-md-editor--readonly .orot-md-content {
+  cursor: default;
+}
+
+.orot-md-editor--readonly:focus-within {
+  border-color: var(--orot-color-border);
+}
+
+.orot-md-editor--readonly .orot-md-content[data-placeholder]::before {
+  display: none;
+}
+
+/* Hide every syntax marker by default */
+.orot-md-editor--preview .orot-md-syntax {
+  display: none;
+}
+
+/* HR keeps its rendered line */
+.orot-md-editor--preview .orot-md-hr .orot-md-syntax {
+  display: block;
+}
+
+/* Hide code fence lines; keep only the inner content block */
+.orot-md-editor--preview .orot-md-code-fence-start,
+.orot-md-editor--preview .orot-md-code-fence-end {
+  display: none;
+}
+
+.orot-md-editor--preview .orot-md-code-content {
+  padding: 0 var(--orot-space-4);
+}
+
+.orot-md-editor--preview .orot-md-code-content:first-child,
+.orot-md-editor--preview .orot-md-code-content--first,
+.orot-md-editor--preview :not(.orot-md-code-content)+.orot-md-code-content {
+  padding-top: var(--orot-space-2);
+  border-top-left-radius: var(--orot-radius-sm);
+  border-top-right-radius: var(--orot-radius-sm);
+}
+
+.orot-md-editor--preview .orot-md-code-content:has(+ :not(.orot-md-code-content)),
+.orot-md-editor--preview .orot-md-code-content:last-child {
+  padding-bottom: var(--orot-space-2);
+  border-bottom-left-radius: var(--orot-radius-sm);
+  border-bottom-right-radius: var(--orot-radius-sm);
+}
+
+/* Unordered list: render bullet via pseudo-element */
+.orot-md-editor--preview .orot-md-list::before {
+  content: '•';
+  display: inline-block;
+  width: 1em;
+  margin-left: -1em;
+  color: var(--orot-color-text-secondary);
+}
+
+/* Ordered list: use CSS counter so numbers appear without raw "1." */
+.orot-md-editor--preview .orot-md-content {
+  counter-reset: orot-md-ol;
+}
+
+.orot-md-editor--preview .orot-md-list-ordered {
+  counter-increment: orot-md-ol;
+}
+
+.orot-md-editor--preview .orot-md-list-ordered::before {
+  content: counter(orot-md-ol) '.';
+  display: inline-block;
+  min-width: 1.5em;
+  margin-left: -1.5em;
+  padding-right: 0.25em;
+  color: var(--orot-color-text-secondary);
+}
+
+/* Task list: restore toggle as a visual checkbox */
+.orot-md-editor--preview .orot-md-task .orot-md-task-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  margin-right: 6px;
+  border: 1.5px solid var(--orot-color-border-strong);
+  border-radius: 3px;
+  font-size: 0;
+  vertical-align: middle;
+  background: transparent;
+  cursor: default;
+}
+
+.orot-md-editor--preview .orot-md-task--done .orot-md-task-toggle {
+  background: var(--orot-color-fill-primary, rgba(37, 99, 235, 0.15));
+  border-color: var(--orot-color-info, #2563eb);
+}
+
+.orot-md-editor--preview .orot-md-task--done .orot-md-task-toggle::before {
+  content: '';
+  width: 7px;
+  height: 4px;
+  border-left: 2px solid var(--orot-color-info, #2563eb);
+  border-bottom: 2px solid var(--orot-color-info, #2563eb);
+  transform: translateY(-1px) rotate(-45deg);
+}
+
+/* Table: hide separator row; header gets its own bottom border */
+.orot-md-editor--preview .orot-md-table-row--sep {
+  display: none;
+}
+
+.orot-md-editor--preview .orot-md-table-row--header {
+  border-bottom: var(--orot-border-width) solid var(--orot-color-border);
 }
 
 /* ── Footer (word count) ─────────────────────────────── */
