@@ -1,4 +1,5 @@
 import {
+  startTransition,
   useRef,
   useState,
   useEffect,
@@ -30,7 +31,11 @@ import type {
   CursorPos,
   SelectionRange,
 } from './MarkdownEditor.types';
-import { renderMarkdown, findImageRangeForDeletion } from './parser';
+import {
+  renderMarkdown,
+  renderMarkdownLines,
+  findImageRangeForDeletion,
+} from './parser';
 import {
   saveCursor,
   saveSelection,
@@ -56,6 +61,27 @@ interface SlashState {
   activeIndex: number;
 }
 
+interface ImagePreviewState {
+  src: string;
+  alt: string;
+}
+
+type EditorSelectionState = SelectionRange | CursorPos | null;
+type HistoryEntryKind = 'typing' | 'command';
+
+interface HistoryEntry {
+  text: string;
+  selection: EditorSelectionState;
+}
+
+interface HistoryState {
+  past: HistoryEntry[];
+  present: HistoryEntry;
+  future: HistoryEntry[];
+  lastKind: HistoryEntryKind | 'none';
+  lastAt: number;
+}
+
 interface ViewportRect {
   top: number;
   left: number;
@@ -72,6 +98,8 @@ const FLOATING_TOOLBAR_GAP = 10;
 const SLASH_MENU_WIDTH = 280;
 const SLASH_MENU_MAX_HEIGHT = 320;
 const SLASH_MENU_GAP = 8;
+const HISTORY_LIMIT = 100;
+const HISTORY_TYPING_MERGE_MS = 900;
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), Math.max(min, max));
@@ -104,6 +132,30 @@ function getSelectionRect(): ViewportRect | null {
   const selection = window.getSelection();
   if (!selection || selection.rangeCount === 0) return null;
   return toViewportRect(selection.getRangeAt(0).getBoundingClientRect());
+}
+
+function cloneSelectionState(
+  selection: EditorSelectionState,
+): EditorSelectionState {
+  if (!selection) return null;
+  if ('start' in selection) {
+    return {
+      start: { ...selection.start },
+      end: { ...selection.end },
+      collapsed: selection.collapsed,
+    };
+  }
+  return { ...selection };
+}
+
+function createHistoryEntry(
+  text: string,
+  selection: EditorSelectionState,
+): HistoryEntry {
+  return {
+    text,
+    selection: cloneSelectionState(selection),
+  };
 }
 
 function getFloatingToolbarPosition(rect: ViewportRect): {
@@ -201,6 +253,80 @@ function restoreRenderedImages(
   });
 }
 
+function createRenderedFragment(
+  doc: Document,
+  renderedLines: string[],
+): DocumentFragment {
+  const template = doc.createElement('template');
+  template.innerHTML = renderedLines.join('');
+  return template.content;
+}
+
+function replaceAllRenderedLines(
+  el: HTMLDivElement,
+  renderedLines: string[],
+): void {
+  const preservedImages = captureRenderedImages(el);
+  el.replaceChildren(createRenderedFragment(el.ownerDocument, renderedLines));
+  restoreRenderedImages(el, preservedImages);
+}
+
+function patchRenderedLines(
+  el: HTMLDivElement,
+  prevLines: string[],
+  nextLines: string[],
+): boolean {
+  if (prevLines.length === 0 || el.children.length !== prevLines.length) {
+    return false;
+  }
+
+  let start = 0;
+  while (
+    start < prevLines.length &&
+    start < nextLines.length &&
+    prevLines[start] === nextLines[start]
+  ) {
+    start++;
+  }
+
+  let prevEnd = prevLines.length - 1;
+  let nextEnd = nextLines.length - 1;
+  while (
+    prevEnd >= start &&
+    nextEnd >= start &&
+    prevLines[prevEnd] === nextLines[nextEnd]
+  ) {
+    prevEnd--;
+    nextEnd--;
+  }
+
+  if (start > prevEnd && start > nextEnd) {
+    return true;
+  }
+
+  const anchor = el.children.item(prevEnd + 1);
+
+  for (let i = prevEnd; i >= start; i--) {
+    el.children.item(i)?.remove();
+  }
+
+  if (start <= nextEnd) {
+    el.insertBefore(
+      createRenderedFragment(
+        el.ownerDocument,
+        nextLines.slice(start, nextEnd + 1),
+      ),
+      anchor,
+    );
+  }
+
+  return true;
+}
+
+function getLineIndex(root: HTMLElement, lineEl: HTMLElement): number {
+  return Array.prototype.indexOf.call(root.children, lineEl) as number;
+}
+
 function detectSlashTrigger(
   text: string,
   cursor: CursorPos,
@@ -234,6 +360,7 @@ export function MarkdownEditor({
   maxHeight,
   autoFocus = false,
   onImageUpload,
+  resolveImageSource,
   onHashtagClick,
   className = '',
   style,
@@ -241,6 +368,14 @@ export function MarkdownEditor({
   const editorRef = useRef<HTMLDivElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const rawRef = useRef<string>(value ?? defaultValue);
+  const renderedLinesRef = useRef<string[]>([]);
+  const historyRef = useRef<HistoryState>({
+    past: [],
+    present: createHistoryEntry(value ?? defaultValue, null),
+    future: [],
+    lastKind: 'none',
+    lastAt: 0,
+  });
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [stats, setStats] = useState<{ words: number; chars: number }>({
     words: 0,
@@ -250,32 +385,72 @@ export function MarkdownEditor({
   const [isFocused, setIsFocused] = useState(false);
   const [floatingRect, setFloatingRect] = useState<ViewportRect | null>(null);
   const [slash, setSlash] = useState<SlashState | null>(null);
+  const [imagePreview, setImagePreview] = useState<ImagePreviewState | null>(null);
   const slashRef = useRef<SlashState | null>(null);
+  const imagePreviewPointerRef = useRef(false);
 
   const updateSlash = useCallback((next: SlashState | null) => {
     slashRef.current = next;
     setSlash(next);
   }, []);
 
+  const closeImagePreview = useCallback(() => {
+    setImagePreview(null);
+  }, []);
+
   // ── Helpers ─────────────────────────────────────────
 
-  const updateStats = (text: string) => {
-    const words = text.trim() ? text.trim().split(/\s+/).length : 0;
-    setStats({ words, chars: text.length });
-    setIsEmpty(!text);
-  };
+  const resetHistory = useCallback(
+    (text: string, selection: EditorSelectionState) => {
+      historyRef.current = {
+        past: [],
+        present: createHistoryEntry(text, selection),
+        future: [],
+        lastKind: 'none',
+        lastAt: 0,
+      };
+    },
+    [],
+  );
+
+  const updateStats = useCallback(
+    (text: string) => {
+      const nextIsEmpty = !text;
+      setIsEmpty((prev) => (prev === nextIsEmpty ? prev : nextIsEmpty));
+
+      if (!showWordCount) return;
+
+      const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+      const chars = text.length;
+      startTransition(() => {
+        setStats((prev) =>
+          prev.words === words && prev.chars === chars ? prev : { words, chars },
+        );
+      });
+    },
+    [showWordCount],
+  );
 
   const applyHTML = useCallback(
     (
       el: HTMLDivElement,
       text: string,
-      sel: SelectionRange | CursorPos | null,
+      sel: EditorSelectionState,
     ) => {
-      const html =
-        renderMarkdown(text) || '<div class="orot-md-line" data-line="0"><br></div>';
-      const preservedImages = captureRenderedImages(el);
-      el.innerHTML = html;
-      restoreRenderedImages(el, preservedImages);
+      const nextRenderedLines = renderMarkdownLines(text, {
+        resolveImageSource,
+      });
+      const patched = patchRenderedLines(
+        el,
+        renderedLinesRef.current,
+        nextRenderedLines,
+      );
+
+      if (!patched) {
+        replaceAllRenderedLines(el, nextRenderedLines);
+      }
+
+      renderedLinesRef.current = nextRenderedLines;
 
       if (sel && 'start' in sel) {
         restoreSelection(el, sel as SelectionRange);
@@ -284,19 +459,134 @@ export function MarkdownEditor({
       }
       updateStats(text);
     },
-    [],
+    [resolveImageSource, updateStats],
   );
 
-  const commit = useCallback(
-    (text: string, sel: SelectionRange | CursorPos | null) => {
+  const writeEditor = useCallback(
+    (
+      text: string,
+      sel: EditorSelectionState,
+      emitChange = true,
+    ) => {
       const el = editorRef.current;
       if (!el) return;
       rawRef.current = text;
       applyHTML(el, text, sel);
-      onChange?.(text);
+      if (emitChange) {
+        onChange?.(text);
+      }
     },
     [applyHTML, onChange],
   );
+
+  const recordHistoryChange = useCallback(
+    (
+      text: string,
+      sel: EditorSelectionState,
+      kind: HistoryEntryKind,
+    ) => {
+      const history = historyRef.current;
+      const nextEntry = createHistoryEntry(text, sel);
+      const now = Date.now();
+
+      if (history.present.text === nextEntry.text) {
+        history.present = nextEntry;
+        history.lastKind = kind;
+        history.lastAt = now;
+        return;
+      }
+
+      const shouldMergeTyping =
+        kind === 'typing' &&
+        history.lastKind === 'typing' &&
+        now - history.lastAt <= HISTORY_TYPING_MERGE_MS;
+
+      if (shouldMergeTyping) {
+        history.present = nextEntry;
+      } else {
+        history.past.push(createHistoryEntry(
+          history.present.text,
+          history.present.selection,
+        ));
+        if (history.past.length > HISTORY_LIMIT) {
+          history.past.shift();
+        }
+        history.present = nextEntry;
+      }
+
+      history.future = [];
+      history.lastKind = kind;
+      history.lastAt = now;
+    },
+    [],
+  );
+
+  const commit = useCallback(
+    (
+      text: string,
+      sel: EditorSelectionState,
+      kind: HistoryEntryKind = 'command',
+    ) => {
+      recordHistoryChange(text, sel, kind);
+      writeEditor(text, sel);
+    },
+    [recordHistoryChange, writeEditor],
+  );
+
+  const undo = useCallback(() => {
+    const history = historyRef.current;
+    const previous = history.past.pop();
+    if (!previous) return;
+
+    history.future.push(
+      createHistoryEntry(history.present.text, history.present.selection),
+    );
+    history.present = createHistoryEntry(previous.text, previous.selection);
+    history.lastKind = 'none';
+    history.lastAt = 0;
+
+    if (slashRef.current) updateSlash(null);
+    setFloatingRect(null);
+    writeEditor(previous.text, previous.selection);
+  }, [updateSlash, writeEditor]);
+
+  const redo = useCallback(() => {
+    const history = historyRef.current;
+    const next = history.future.pop();
+    if (!next) return;
+
+    history.past.push(
+      createHistoryEntry(history.present.text, history.present.selection),
+    );
+    if (history.past.length > HISTORY_LIMIT) {
+      history.past.shift();
+    }
+    history.present = createHistoryEntry(next.text, next.selection);
+    history.lastKind = 'none';
+    history.lastAt = 0;
+
+    if (slashRef.current) updateSlash(null);
+    setFloatingRect(null);
+    writeEditor(next.text, next.selection);
+  }, [updateSlash, writeEditor]);
+
+  useEffect(() => {
+    if (!showWordCount) return;
+    updateStats(rawRef.current);
+  }, [showWordCount, updateStats]);
+
+  useEffect(() => {
+    if (!imagePreview) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        closeImagePreview();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [closeImagePreview, imagePreview]);
 
   // ── Initialize ───────────────────────────────────────
 
@@ -304,6 +594,7 @@ export function MarkdownEditor({
     const el = editorRef.current;
     if (!el) return;
     applyHTML(el, rawRef.current, null);
+    resetHistory(rawRef.current, null);
     if (autoFocus) el.focus();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -316,7 +607,8 @@ export function MarkdownEditor({
     const el = editorRef.current;
     if (!el) return;
     applyHTML(el, value, null);
-  }, [value, applyHTML]);
+    resetHistory(value, null);
+  }, [value, applyHTML, resetHistory]);
 
   // ── Input handler ────────────────────────────────────
 
@@ -325,19 +617,19 @@ export function MarkdownEditor({
     if (!el) return;
     const cursor = saveCursor(el);
     const text = getRawText(el);
-    rawRef.current = text;
-    applyHTML(el, text, cursor);
-    onChange?.(text);
+    const trigger =
+      showSlashMenu && !readOnly && cursor
+        ? detectSlashTrigger(text, cursor)
+        : null;
+    const selectionRect = trigger ? getSelectionRect() : null;
+    commit(text, cursor, 'typing');
 
     if (!showSlashMenu || readOnly) return;
-    const caret = saveCursor(el);
-    if (!caret) return;
-    const trigger = detectSlashTrigger(text, caret);
+    if (!cursor) return;
     if (!trigger) {
       if (slashRef.current) updateSlash(null);
       return;
     }
-    const selectionRect = getSelectionRect();
     if (slashRef.current) {
       updateSlash({
         ...slashRef.current,
@@ -360,7 +652,7 @@ export function MarkdownEditor({
       rect: selectionRect,
       activeIndex: 0,
     });
-  }, [applyHTML, onChange, showSlashMenu, readOnly, updateSlash]);
+  }, [commit, showSlashMenu, readOnly, updateSlash]);
 
   // ── Format helpers ───────────────────────────────────
 
@@ -1011,6 +1303,20 @@ export function MarkdownEditor({
       const shift = e.shiftKey;
       if (!mod) return;
 
+      if (e.key === 'z' || e.key === 'Z') {
+        e.preventDefault();
+        if (shift) {
+          redo();
+        } else {
+          undo();
+        }
+        return;
+      }
+      if (!shift && (e.key === 'y' || e.key === 'Y')) {
+        e.preventDefault();
+        redo();
+        return;
+      }
       if (e.key === 'b' || e.key === 'B') {
         e.preventDefault();
         applyInlineWrap('**', '**');
@@ -1077,7 +1383,7 @@ export function MarkdownEditor({
         return;
       }
     },
-    [applyInlineWrap, toggleBlockPrefix, commit],
+    [applyInlineWrap, redo, toggleBlockPrefix, undo],
   );
 
   // ── Paste handler ────────────────────────────────────
@@ -1151,19 +1457,51 @@ export function MarkdownEditor({
     [commit],
   );
 
+  const handleContentMouseDownCapture = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      const target = e.target as HTMLElement;
+      imagePreviewPointerRef.current =
+        Boolean(target.closest('.orot-md-image-preview__img')) &&
+        (readOnly || !isFocused);
+    },
+    [isFocused, readOnly],
+  );
+
   // ── Click handler (task checkboxes + hashtags) ───────
 
   const handleClick = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
       const target = e.target as HTMLElement;
+      const imageThumb = target.closest<HTMLImageElement>('.orot-md-image-preview__img');
+
+      if (imageThumb) {
+        const shouldOpenPreview = imagePreviewPointerRef.current;
+        imagePreviewPointerRef.current = false;
+
+        if (shouldOpenPreview) {
+          const imageRoot = imageThumb.closest<HTMLElement>('.orot-md-image');
+          const previewSrc =
+            imageRoot?.dataset.imagePreviewSrc || imageRoot?.dataset.imageSrc;
+          if (previewSrc) {
+            e.preventDefault();
+            setImagePreview({
+              src: previewSrc,
+              alt: imageRoot?.dataset.imageAlt ?? imageThumb.alt ?? '',
+            });
+            return;
+          }
+        }
+      }
 
       // Task checkbox toggle
-      const toggle = target.closest<HTMLElement>('[data-task-toggle]');
+      const toggle = target.closest<HTMLElement>('.orot-md-task-toggle');
       if (toggle) {
         const el = editorRef.current;
         if (!el || readOnly) return;
         e.preventDefault();
-        const lineIdx = parseInt(toggle.dataset.taskToggle ?? '-1', 10);
+        const lineEl = toggle.closest<HTMLElement>('.orot-md-line');
+        if (!lineEl) return;
+        const lineIdx = getLineIndex(el, lineEl);
         if (lineIdx < 0) return;
         const lines = rawRef.current.split('\n');
         const line = lines[lineIdx] ?? '';
@@ -1471,6 +1809,45 @@ export function MarkdownEditor({
         )
       : null;
 
+  const imagePreviewOverlay =
+    imagePreview && typeof document !== 'undefined'
+      ? createPortal(
+          <div
+            className="orot-md-image-lightbox"
+            role="dialog"
+            aria-modal="true"
+            aria-label={imagePreview.alt || 'Image preview'}
+            onClick={closeImagePreview}
+          >
+            <div
+              className="orot-md-image-lightbox__content"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <img
+                src={imagePreview.src}
+                alt={imagePreview.alt}
+                className="orot-md-image-lightbox__img"
+                draggable={false}
+              />
+              {imagePreview.alt && (
+                <div className="orot-md-image-lightbox__caption">
+                  {imagePreview.alt}
+                </div>
+              )}
+            </div>
+            <button
+              type="button"
+              className="orot-md-image-lightbox__close"
+              aria-label="Close image preview"
+              onClick={closeImagePreview}
+            >
+              ✕
+            </button>
+          </div>,
+          document.body,
+        )
+      : null;
+
   // ── Render ───────────────────────────────────────────
 
   return (
@@ -1529,6 +1906,7 @@ export function MarkdownEditor({
           className="orot-md-content"
           contentEditable={!readOnly}
           suppressContentEditableWarning
+          onMouseDownCapture={handleContentMouseDownCapture}
           onInput={handleInput}
           onKeyDown={handleKeyDown}
           onPaste={handlePaste}
@@ -1564,6 +1942,7 @@ export function MarkdownEditor({
       />
       {slashMenu}
       {floatingToolbar}
+      {imagePreviewOverlay}
     </div>
   );
 }

@@ -1,5 +1,21 @@
 import type { CSSProperties } from 'react';
 
+export interface MarkdownEditorImageSource {
+  /** Image shown inside the editor body, typically a thumbnail */
+  displaySrc: string;
+  /** Image opened when the inline preview is clicked */
+  previewSrc?: string;
+  /** Optional intrinsic width for layout stability */
+  width?: number;
+  /** Optional intrinsic height for layout stability */
+  height?: number;
+}
+
+export type MarkdownEditorResolveImageSource = (
+  url: string,
+  alt: string,
+) => MarkdownEditorImageSource | null | undefined;
+
 export interface MarkdownEditorProps {
   /** Controlled value (raw markdown string) */
   value?: string;
@@ -28,6 +44,8 @@ export interface MarkdownEditorProps {
   /** Called when an image file is dropped or selected via toolbar.
    *  Return the URL to embed. If omitted, images are embedded as data-URLs. */
   onImageUpload?: (file: File) => Promise<string>;
+  /** Resolve an embedded image URL to a lighter inline image and/or preview target */
+  resolveImageSource?: MarkdownEditorResolveImageSource;
   /** Called when a hashtag is clicked */
   onHashtagClick?: (tag: string) => void;
   className?: string;

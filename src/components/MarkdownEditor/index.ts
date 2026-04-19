@@ -1,2 +1,8 @@
 export { MarkdownEditor, renderMarkdown } from './MarkdownEditor';
-export type { MarkdownEditorProps, CursorPos } from './MarkdownEditor.types';
+export type { MarkdownRenderOptions } from './parser';
+export type {
+  MarkdownEditorProps,
+  CursorPos,
+  MarkdownEditorImageSource,
+  MarkdownEditorResolveImageSource,
+} from './MarkdownEditor.types';

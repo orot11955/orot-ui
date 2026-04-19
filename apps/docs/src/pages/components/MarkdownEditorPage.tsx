@@ -50,6 +50,34 @@ function greet(name: string): string {
 텍스트를 선택하면 위쪽에 **플로팅 툴바**가 나타납니다.
 `;
 
+const THUMBNAIL_IMAGE_MAP = {
+  'https://picsum.photos/id/1035/1280/720': {
+    displaySrc: 'https://picsum.photos/id/1035/480/270',
+    previewSrc: 'https://picsum.photos/id/1035/1280/720',
+    width: 480,
+    height: 270,
+  },
+  'https://picsum.photos/id/1025/1200/900': {
+    displaySrc: 'https://picsum.photos/id/1025/360/270',
+    previewSrc: 'https://picsum.photos/id/1025/1200/900',
+    width: 360,
+    height: 270,
+  },
+} as const;
+
+const THUMBNAIL_CONTENT = `## 사진이 많은 문서
+
+썸네일만 본문에 그려서 가볍게 스크롤하고, 미리보기 상태에서 사진을 클릭하면 원본을 볼 수 있습니다.
+
+![바다](https://picsum.photos/id/1035/1280/720)
+
+중간 설명 텍스트가 길어져도 본문에서는 가벼운 이미지만 유지합니다.
+
+![강아지](https://picsum.photos/id/1025/1200/900)
+`;
+
+const resolveImageSource = (url: string) => THUMBNAIL_IMAGE_MAP[url as keyof typeof THUMBNAIL_IMAGE_MAP] ?? null;
+
 export default function MarkdownEditorPage() {
   const [controlled, setControlled] = useState('# 제어형 에디터\n\n내용을 수정해 보세요!');
   const [lastTag, setLastTag] = useState<string | null>(null);
@@ -92,6 +120,27 @@ export default function MarkdownEditorPage() {
             마지막 클릭: {lastTag ? <code>#{lastTag}</code> : <em>없음</em>}
           </div>
         </div>
+      </Example>
+
+      <Example
+        title="썸네일 렌더 + 원본 미리보기"
+        code={`const resolveImageSource = (url) => ({
+  displaySrc: thumbnailUrl,
+  previewSrc: originalUrl,
+  width: 480,
+  height: 270,
+});
+
+<MarkdownEditor
+  defaultValue={content}
+  resolveImageSource={resolveImageSource}
+/>`}
+      >
+        <MarkdownEditor
+          defaultValue={THUMBNAIL_CONTENT}
+          resolveImageSource={resolveImageSource}
+          minHeight={320}
+        />
       </Example>
 
       <Example
@@ -281,6 +330,12 @@ export default function MarkdownEditorPage() {
               '이미지 파일 선택/드롭 시 호출. URL 반환 시 ![name](url) 삽입. 미지정 시 data-URL 사용',
           },
           {
+            name: 'resolveImageSource',
+            type: '(url: string, alt: string) => { displaySrc, previewSrc?, width?, height? }',
+            description:
+              '본문에는 썸네일(displaySrc), 클릭 미리보기에는 원본(previewSrc)을 연결할 때 사용',
+          },
+          {
             name: 'onHashtagClick',
             type: '(tag: string) => void',
             description: '해시태그(#tag) 클릭 시 호출 — 태그 기반 필터/검색 연동에 사용',
@@ -318,15 +373,16 @@ export default function MarkdownEditorPage() {
         코드 · <code>⌘K</code> 링크 · <code>⌘⇧X</code> 취소선 ·{' '}
         <code>⌘⇧H</code> 형광펜 · <code>⌘1/2/3</code> 제목 1/2/3 ·{' '}
         <code>⌘⇧8</code> 목록 · <code>⌘⇧7</code> 번호 목록 ·{' '}
-        <code>⌘⇧U</code> 작업 목록 · <code>⌘⇧.</code> 인용문 · <code>Tab</code>{' '}
-        들여쓰기 · <code>⇧Tab</code> 내어쓰기 · <code>Enter</code> 리스트 자동 계속 ·{' '}
-        <code>⇧Enter</code> 소프트 줄바꿈
+        <code>⌘⇧U</code> 작업 목록 · <code>⌘⇧.</code> 인용문 · <code>⌘Z</code>{' '}
+        되돌리기 · <code>⌘⇧Z</code>/<code>Ctrl+Y</code> 다시 실행 ·{' '}
+        <code>Tab</code> 들여쓰기 · <code>⇧Tab</code> 내어쓰기 · <code>Enter</code>{' '}
+        리스트 자동 계속 · <code>⇧Enter</code> 소프트 줄바꿈
         <br />
         <br />
         <strong style={{ color: 'var(--orot-color-text)' }}>상호작용</strong>
         <br />
         · 체크박스 <code>[ ]</code>/<code>[x]</code> 클릭으로 완료 토글 · 이미지
-        드래그 앤 드롭 · 선택 영역 위에 URL 붙여넣기 →{' '}
+        드래그 앤 드롭 · 썸네일 렌더 시 미리보기 상태에서 이미지 클릭 → 원본 보기 · 선택 영역 위에 URL 붙여넣기 →{' '}
         <code>[선택](url)</code> 자동 변환 · 텍스트 선택 시 플로팅 툴바 표시 ·{' '}
         <code>/</code> 입력 시 커서 위치에 슬래시 커맨드 메뉴 표시
       </div>

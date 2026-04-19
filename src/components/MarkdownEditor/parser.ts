@@ -1,3 +1,5 @@
+import type { MarkdownEditorResolveImageSource } from './MarkdownEditor.types';
+
 // ── HTML escape ───────────────────────────────────────
 
 export function esc(text: string): string {
@@ -20,12 +22,19 @@ export function escAttr(text: string): string {
 const URL_RE = /^(https?:\/\/|www\.)[^\s<>()[\]{}'"]+/i;
 const HASHTAG_RE = /^[\p{L}\p{N}][\p{L}\p{N}_-]*/u;
 
+export interface MarkdownRenderOptions {
+  resolveImageSource?: MarkdownEditorResolveImageSource;
+}
+
 function isWordBoundary(ch: string | undefined): boolean {
   if (ch === undefined) return true;
   return !/[\p{L}\p{N}_]/u.test(ch);
 }
 
-export function parseInline(raw: string): string {
+export function parseInline(
+  raw: string,
+  options: MarkdownRenderOptions = {},
+): string {
   if (!raw) return '';
   let result = '';
   let i = 0;
@@ -49,7 +58,7 @@ export function parseInline(raw: string): string {
       const end = raw.indexOf('**', i + 2);
       if (end !== -1 && end > i + 2) {
         const content = raw.slice(i + 2, end);
-        result += `<span class="orot-md-syntax">**</span><strong class="orot-md-bold">${parseInline(content)}</strong><span class="orot-md-syntax">**</span>`;
+        result += `<span class="orot-md-syntax">**</span><strong class="orot-md-bold">${parseInline(content, options)}</strong><span class="orot-md-syntax">**</span>`;
         i = end + 2;
         continue;
       }
@@ -60,7 +69,7 @@ export function parseInline(raw: string): string {
       const end = raw.indexOf('__', i + 2);
       if (end !== -1 && end > i + 2) {
         const content = raw.slice(i + 2, end);
-        result += `<span class="orot-md-syntax">__</span><strong class="orot-md-bold">${parseInline(content)}</strong><span class="orot-md-syntax">__</span>`;
+        result += `<span class="orot-md-syntax">__</span><strong class="orot-md-bold">${parseInline(content, options)}</strong><span class="orot-md-syntax">__</span>`;
         i = end + 2;
         continue;
       }
@@ -71,7 +80,7 @@ export function parseInline(raw: string): string {
       const end = findSingleClose(raw, i + 1, '*');
       if (end !== -1) {
         const content = raw.slice(i + 1, end);
-        result += `<span class="orot-md-syntax">*</span><em class="orot-md-italic">${parseInline(content)}</em><span class="orot-md-syntax">*</span>`;
+        result += `<span class="orot-md-syntax">*</span><em class="orot-md-italic">${parseInline(content, options)}</em><span class="orot-md-syntax">*</span>`;
         i = end + 1;
         continue;
       }
@@ -82,7 +91,7 @@ export function parseInline(raw: string): string {
       const end = findSingleClose(raw, i + 1, '_');
       if (end !== -1 && isWordBoundary(raw[end + 1])) {
         const content = raw.slice(i + 1, end);
-        result += `<span class="orot-md-syntax">_</span><em class="orot-md-italic">${parseInline(content)}</em><span class="orot-md-syntax">_</span>`;
+        result += `<span class="orot-md-syntax">_</span><em class="orot-md-italic">${parseInline(content, options)}</em><span class="orot-md-syntax">_</span>`;
         i = end + 1;
         continue;
       }
@@ -93,7 +102,7 @@ export function parseInline(raw: string): string {
       const end = raw.indexOf('~~', i + 2);
       if (end !== -1 && end > i + 2) {
         const content = raw.slice(i + 2, end);
-        result += `<span class="orot-md-syntax">~~</span><s class="orot-md-strike">${parseInline(content)}</s><span class="orot-md-syntax">~~</span>`;
+        result += `<span class="orot-md-syntax">~~</span><s class="orot-md-strike">${parseInline(content, options)}</s><span class="orot-md-syntax">~~</span>`;
         i = end + 2;
         continue;
       }
@@ -104,7 +113,7 @@ export function parseInline(raw: string): string {
       const end = raw.indexOf('==', i + 2);
       if (end !== -1 && end > i + 2) {
         const content = raw.slice(i + 2, end);
-        result += `<span class="orot-md-syntax">==</span><mark class="orot-md-highlight">${parseInline(content)}</mark><span class="orot-md-syntax">==</span>`;
+        result += `<span class="orot-md-syntax">==</span><mark class="orot-md-highlight">${parseInline(content, options)}</mark><span class="orot-md-syntax">==</span>`;
         i = end + 2;
         continue;
       }
@@ -118,7 +127,22 @@ export function parseInline(raw: string): string {
         if (urlEnd !== -1) {
           const alt = raw.slice(i + 2, altEnd);
           const url = raw.slice(altEnd + 2, urlEnd);
-          result += `<span class="orot-md-image"><span class="orot-md-image-token orot-md-syntax">![${esc(alt)}](${esc(url)})</span><span class="orot-md-image-preview" contenteditable="false"><img src="${escAttr(url)}" alt="${escAttr(alt)}" class="orot-md-image-preview__img" loading="eager" decoding="async" draggable="false" /></span></span>`;
+          const resolved = options.resolveImageSource?.(url, alt);
+          const displaySrc = resolved?.displaySrc || url;
+          const previewSrc = resolved?.previewSrc || url;
+          const width =
+            typeof resolved?.width === 'number' && resolved.width > 0
+              ? Math.round(resolved.width)
+              : null;
+          const height =
+            typeof resolved?.height === 'number' && resolved.height > 0
+              ? Math.round(resolved.height)
+              : null;
+          const dimensionAttrs =
+            width !== null && height !== null
+              ? ` width="${width}" height="${height}"`
+              : '';
+          result += `<span class="orot-md-image" data-image-src="${escAttr(url)}" data-image-preview-src="${escAttr(previewSrc)}" data-image-alt="${escAttr(alt)}"><span class="orot-md-image-token orot-md-syntax">![${esc(alt)}](${esc(url)})</span><span class="orot-md-image-preview" contenteditable="false"><img src="${escAttr(displaySrc)}" alt="${escAttr(alt)}" class="orot-md-image-preview__img" loading="lazy" decoding="async" draggable="false"${dimensionAttrs} /></span></span>`;
           i = urlEnd + 1;
           continue;
         }
@@ -133,7 +157,7 @@ export function parseInline(raw: string): string {
         if (urlEnd !== -1) {
           const linkText = raw.slice(i + 1, textEnd);
           const url = raw.slice(textEnd + 2, urlEnd);
-          result += `<span class="orot-md-syntax">[</span><a href="${escAttr(url)}" class="orot-md-link" target="_blank" rel="noopener noreferrer">${parseInline(linkText)}</a><span class="orot-md-syntax">](${esc(url)})</span>`;
+          result += `<span class="orot-md-syntax">[</span><a href="${escAttr(url)}" class="orot-md-link" target="_blank" rel="noopener noreferrer">${parseInline(linkText, options)}</a><span class="orot-md-syntax">](${esc(url)})</span>`;
           i = urlEnd + 1;
           continue;
         }
@@ -338,7 +362,7 @@ function highlightCodeLine(line: string, lang: string): string {
 
 // ── Block parser ──────────────────────────────────────
 
-function renderTableRow(line: string, lineIdx: number, kind: 'header' | 'sep' | 'body'): string {
+function renderTableRow(line: string, kind: 'header' | 'sep' | 'body'): string {
   // Split by | preserving leading/trailing syntax pipes
   const hasLeading = line.startsWith('|');
   const hasTrailing = line.endsWith('|') && line.length > 1;
@@ -360,7 +384,7 @@ function renderTableRow(line: string, lineIdx: number, kind: 'header' | 'sep' | 
       : kind === 'sep'
       ? 'orot-md-table-row--sep'
       : 'orot-md-table-row--body';
-  return `<div class="orot-md-line orot-md-table-row ${kindClass}" data-line="${lineIdx}">${parts.join('')}</div>`;
+  return `<div class="orot-md-line orot-md-table-row ${kindClass}">${parts.join('')}</div>`;
 }
 
 function isTableSeparator(line: string): boolean {
@@ -378,48 +402,37 @@ function isTableRow(line: string): boolean {
   return true;
 }
 
-export function renderMarkdown(rawText: string): string {
+export function renderMarkdownLines(
+  rawText: string,
+  options: MarkdownRenderOptions = {},
+): string[] {
   const lines = rawText.split('\n');
+  const rendered: string[] = [];
   let inCodeBlock = false;
   let codeLang = '';
   let codeFirstLine = false;
 
-  // Pre-scan table ranges: a header row followed by a separator makes a table.
-  const tableKind: Array<'header' | 'sep' | 'body' | null> = new Array(lines.length).fill(null);
-  for (let i = 0; i < lines.length; i++) {
-    if (tableKind[i] !== null) continue;
-    if (inCodeBlockAt(lines, i)) continue;
-    if (isTableRow(lines[i]) && i + 1 < lines.length && isTableSeparator(lines[i + 1])) {
-      tableKind[i] = 'header';
-      tableKind[i + 1] = 'sep';
-      let j = i + 2;
-      while (j < lines.length && isTableRow(lines[j]) && !isTableSeparator(lines[j])) {
-        tableKind[j] = 'body';
-        j++;
-      }
-      i = j - 1;
-    }
-  }
-
-  const rendered = lines.map((line, idx) => {
-    // Table row
-    const tk = tableKind[idx];
-    if (tk) return renderTableRow(line, idx, tk);
-
+  for (let idx = 0; idx < lines.length; idx++) {
+    const line = lines[idx];
     // Code fence toggle
     if (line.startsWith('```')) {
       if (inCodeBlock) {
         inCodeBlock = false;
         codeLang = '';
         codeFirstLine = false;
-        return `<div class="orot-md-line orot-md-code-fence-end" data-line="${idx}"><span class="orot-md-code-line">${esc(line)}</span></div>`;
+        rendered.push(
+          `<div class="orot-md-line orot-md-code-fence-end"><span class="orot-md-code-line">${esc(line)}</span></div>`,
+        );
       } else {
         inCodeBlock = true;
         codeLang = line.slice(3).trim();
         codeFirstLine = true;
         const langAttr = codeLang ? ` data-lang="${escAttr(codeLang)}"` : '';
-        return `<div class="orot-md-line orot-md-code-fence-start" data-line="${idx}"${langAttr}><span class="orot-md-code-line">${esc(line)}</span></div>`;
+        rendered.push(
+          `<div class="orot-md-line orot-md-code-fence-start"${langAttr}><span class="orot-md-code-line">${esc(line)}</span></div>`,
+        );
       }
+      continue;
     }
 
     // Inside code block
@@ -428,7 +441,23 @@ export function renderMarkdown(rawText: string): string {
       const langAttr = codeFirstLine && codeLang ? ` data-lang="${escAttr(codeLang)}"` : '';
       codeFirstLine = false;
       const highlighted = highlightCodeLine(line, codeLang);
-      return `<div class="orot-md-line orot-md-code-content${firstClass}" data-line="${idx}"${langAttr}><span class="orot-md-code-line">${highlighted}</span></div>`;
+      rendered.push(
+        `<div class="orot-md-line orot-md-code-content${firstClass}"${langAttr}><span class="orot-md-code-line">${highlighted}</span></div>`,
+      );
+      continue;
+    }
+
+    // Table block
+    if (isTableRow(line) && idx + 1 < lines.length && isTableSeparator(lines[idx + 1])) {
+      rendered.push(renderTableRow(line, 'header'));
+      rendered.push(renderTableRow(lines[idx + 1], 'sep'));
+      idx += 2;
+      while (idx < lines.length && isTableRow(lines[idx]) && !isTableSeparator(lines[idx])) {
+        rendered.push(renderTableRow(lines[idx], 'body'));
+        idx++;
+      }
+      idx--;
+      continue;
     }
 
     // Heading
@@ -436,13 +465,19 @@ export function renderMarkdown(rawText: string): string {
     if (headingMatch) {
       const level = headingMatch[1].length;
       const content = headingMatch[2];
-      return `<div class="orot-md-line orot-md-h${level}" data-line="${idx}"><span class="orot-md-syntax orot-md-heading-marker">${esc(headingMatch[1])} </span>${parseInline(content)}</div>`;
+      rendered.push(
+        `<div class="orot-md-line orot-md-h${level}"><span class="orot-md-syntax orot-md-heading-marker">${esc(headingMatch[1])} </span>${parseInline(content, options)}</div>`,
+      );
+      continue;
     }
 
     // Blockquote
     if (line.startsWith('> ') || line === '>') {
       const content = line.startsWith('> ') ? line.slice(2) : '';
-      return `<div class="orot-md-line orot-md-blockquote" data-line="${idx}"><span class="orot-md-syntax">&gt; </span>${parseInline(content)}</div>`;
+      rendered.push(
+        `<div class="orot-md-line orot-md-blockquote"><span class="orot-md-syntax">&gt; </span>${parseInline(content, options)}</div>`,
+      );
+      continue;
     }
 
     // Task list
@@ -452,7 +487,10 @@ export function renderMarkdown(rawText: string): string {
       const checked = taskMatch[2].toLowerCase() === 'x';
       const content = taskMatch[3];
       const depthClass = `orot-md-list--depth-${Math.min(Math.floor(indent.length / 2), 3)}`;
-      return `<div class="orot-md-line orot-md-task ${depthClass}${checked ? ' orot-md-task--done' : ''}" data-line="${idx}"><span class="orot-md-syntax orot-md-task-prefix">${esc(indent)}- </span><span class="orot-md-task-toggle orot-md-syntax" role="checkbox" aria-checked="${checked}" data-task-toggle="${idx}">[${esc(taskMatch[2])}]</span><span class="orot-md-syntax"> </span>${parseInline(content)}</div>`;
+      rendered.push(
+        `<div class="orot-md-line orot-md-task ${depthClass}${checked ? ' orot-md-task--done' : ''}"><span class="orot-md-syntax orot-md-task-prefix">${esc(indent)}- </span><span class="orot-md-task-toggle orot-md-syntax" role="checkbox" aria-checked="${checked}">[${esc(taskMatch[2])}]</span><span class="orot-md-syntax"> </span>${parseInline(content, options)}</div>`,
+      );
+      continue;
     }
 
     // Unordered list
@@ -460,7 +498,10 @@ export function renderMarkdown(rawText: string): string {
     if (ulMatch) {
       const indent = ulMatch[1];
       const depthClass = `orot-md-list--depth-${Math.min(Math.floor(indent.length / 2), 3)}`;
-      return `<div class="orot-md-line orot-md-list ${depthClass}" data-line="${idx}"><span class="orot-md-syntax">${esc(indent)}- </span>${parseInline(ulMatch[2])}</div>`;
+      rendered.push(
+        `<div class="orot-md-line orot-md-list ${depthClass}"><span class="orot-md-syntax">${esc(indent)}- </span>${parseInline(ulMatch[2], options)}</div>`,
+      );
+      continue;
     }
 
     // Ordered list
@@ -468,32 +509,36 @@ export function renderMarkdown(rawText: string): string {
     if (olMatch) {
       const indent = olMatch[1];
       const num = olMatch[2];
-      return `<div class="orot-md-line orot-md-list-ordered" data-line="${idx}"><span class="orot-md-syntax">${esc(indent)}${esc(num)}. </span>${parseInline(olMatch[3])}</div>`;
+      rendered.push(
+        `<div class="orot-md-line orot-md-list-ordered"><span class="orot-md-syntax">${esc(indent)}${esc(num)}. </span>${parseInline(olMatch[3], options)}</div>`,
+      );
+      continue;
     }
 
     // Horizontal rule
     if (line.match(/^(---|\*\*\*|___)$/)) {
-      return `<div class="orot-md-line orot-md-hr" data-line="${idx}" aria-hidden="true"><span class="orot-md-syntax">${esc(line)}</span></div>`;
+      rendered.push(
+        `<div class="orot-md-line orot-md-hr" aria-hidden="true"><span class="orot-md-syntax">${esc(line)}</span></div>`,
+      );
+      continue;
     }
 
     // Empty line
     if (line === '') {
-      return `<div class="orot-md-line" data-line="${idx}"><br></div>`;
+      rendered.push('<div class="orot-md-line"><br></div>');
+      continue;
     }
 
     // Regular paragraph
-    return `<div class="orot-md-line" data-line="${idx}">${parseInline(line)}</div>`;
-  });
+    rendered.push(`<div class="orot-md-line">${parseInline(line, options)}</div>`);
+  }
 
-  return rendered.join('');
+  return rendered;
 }
 
-// Helper: quickly tell whether line `i` is within a code fence given the raw lines.
-// Used during table pre-scan so we don't accidentally style fenced pipes.
-function inCodeBlockAt(lines: string[], i: number): boolean {
-  let inside = false;
-  for (let k = 0; k < i; k++) {
-    if (lines[k].startsWith('```')) inside = !inside;
-  }
-  return inside;
+export function renderMarkdown(
+  rawText: string,
+  options: MarkdownRenderOptions = {},
+): string {
+  return renderMarkdownLines(rawText, options).join('');
 }
