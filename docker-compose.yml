@@ -1,0 +1,10 @@
+services:
+  docs:
+    container_name: orot-ui-docs
+    build:
+      context: .
+      dockerfile: apps/docs/Dockerfile
+    image: orot-ui-docs:local
+    ports:
+      - "${DOCS_PORT:-8080}:80"
+    restart: unless-stopped

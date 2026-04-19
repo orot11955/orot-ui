@@ -46,6 +46,9 @@ pnpm dev
 pnpm dev:docs
 ```
 
+docs 앱의 버전 표기는 루트 `package.json`의 `"version"`을 기준으로 자동 반영됩니다.
+즉, 릴리즈 버전은 루트 패키지 한 곳만 수정하면 문서 헤더/홈 배지/예제 표시가 함께 따라갑니다.
+
 라이브러리 빌드:
 
 ```bash
@@ -146,6 +149,24 @@ pnpm dev:docs
 배포 대상 주소:
 
 - https://ui.2juho.com
+
+Docker Compose로 docs를 띄우려면 루트 `orot-ui`에서 아래처럼 실행하면 됩니다.
+
+```bash
+DOCS_PORT=8080 docker compose up -d --build docs
+```
+
+`.env.example`를 복사해 `.env`로 두고 포트를 관리해도 됩니다.
+
+또는 package script를 사용할 수 있습니다.
+
+```bash
+pnpm docker:docs:up
+pnpm docker:docs:logs
+pnpm docker:docs:down
+```
+
+기본 포트는 `8080`이며, `DOCS_PORT` 환경변수로 변경할 수 있습니다.
 
 ## Build Output
 

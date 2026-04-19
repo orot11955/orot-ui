@@ -1,8 +1,17 @@
+import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
+const rootPackageJsonPath = path.resolve(__dirname, '../../package.json');
+const { version: orotUiVersion } = JSON.parse(
+  readFileSync(rootPackageJsonPath, 'utf8'),
+) as { version: string };
+
 export default defineConfig({
+  define: {
+    __OROT_UI_VERSION__: JSON.stringify(orotUiVersion),
+  },
   plugins: [react()],
   resolve: {
     alias: {

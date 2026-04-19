@@ -2,11 +2,12 @@ import { Collapse } from 'orot-ui';
 import { DocPage } from '../../components/DocPage';
 import { Example } from '../../components/Example';
 import { PropsTable } from '../../components/PropsTable';
+import { OROT_UI_VERSION_LABEL } from '../../config/site';
 
 const items = [
   { key: '1', label: 'What is orot-ui?', children: <p>orot-ui is a minimal React component library inspired by Ant Design, featuring a "bare markdown memo app" aesthetic.</p> },
   { key: '2', label: 'How to install?', children: <p>Run <code>npm install orot-ui</code> and import global styles in your entry file.</p> },
-  { key: '3', label: 'Is it production ready?', children: <p>It is under active development. Use at your own discretion.</p>, extra: 'v0.1' },
+  { key: '3', label: 'Is it production ready?', children: <p>It is under active development. Use at your own discretion.</p>, extra: OROT_UI_VERSION_LABEL },
   { key: '4', label: 'Disabled panel', children: <p>This panel is disabled.</p>, disabled: true },
 ];
 

@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { OROT_UI_VERSION_LABEL } from '../config/site';
 import { HOME_COMPONENT_GROUPS } from '../config/navigation';
 import './HomePage.css';
 
@@ -13,7 +14,7 @@ export default function HomePage() {
           레이아웃 강점 · 반응형 · 베어 마크다운 메모앱 컨셉
         </p>
         <div className="home__badges">
-          <span className="home__badge">v0.1.0</span>
+          <span className="home__badge">{OROT_UI_VERSION_LABEL}</span>
           <span className="home__badge">React 18</span>
           <span className="home__badge">TypeScript</span>
         </div>

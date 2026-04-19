@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { OROT_UI_VERSION_LABEL } from '../config/site';
 import { NAV_ITEMS } from '../config/navigation';
 import './DocsLayout.css';
 
@@ -146,7 +147,7 @@ export default function DocsLayout() {
           >
             orot-ui
           </span>
-          <span className="docs-header__version">v0.1</span>
+          <span className="docs-header__version">{OROT_UI_VERSION_LABEL}</span>
         </div>
         <div className="docs-header__right">
           <ThemeToggle

@@ -1,0 +1,2 @@
+export const OROT_UI_VERSION = __OROT_UI_VERSION__;
+export const OROT_UI_VERSION_LABEL = `v${OROT_UI_VERSION}`;

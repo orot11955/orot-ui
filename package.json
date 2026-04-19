@@ -33,7 +33,11 @@
     "publish:dry-run": "npm publish --dry-run",
     "dev": "tsup --watch",
     "dev:docs": "pnpm --filter docs dev",
-    "build:docs": "pnpm --filter docs build"
+    "build:docs": "pnpm --filter docs build",
+    "docker:docs:build": "docker compose build docs",
+    "docker:docs:up": "docker compose up -d --build docs",
+    "docker:docs:down": "docker compose down",
+    "docker:docs:logs": "docker compose logs -f docs"
   },
   "workspaces": [
     "apps/*"
