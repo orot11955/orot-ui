@@ -23,7 +23,8 @@ export default function HomePage() {
       <div className="home__section">
         <h2 className="home__section-title">Quick Start</h2>
         <pre className="home__code">{`# 설치
-아직 구현 중이므로 체험을 원할 시 orot1195@gmail.com으로 연락 부탁드립니다.
+npm install orot-ui
+yarn add orot-ui
 
 # 글로벌 스타일 (main.tsx 또는 _app.tsx)
 import 'orot-ui/styles/global.css';
