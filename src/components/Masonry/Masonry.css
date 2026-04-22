@@ -1,18 +1,16 @@
 .orot-masonry {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--orot-masonry-gap, 16px);
+  position: relative;
   width: 100%;
-}
-
-.orot-masonry__col {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: var(--orot-masonry-gap, 16px);
-  min-width: 0;
+  height: var(--orot-masonry-height, 0px);
 }
 
 .orot-masonry__item {
-  width: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  min-width: 0;
+}
+
+.orot-masonry__item--hidden {
+  visibility: hidden;
 }

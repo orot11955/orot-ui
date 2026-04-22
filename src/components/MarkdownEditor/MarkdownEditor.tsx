@@ -431,6 +431,61 @@ function replaceFirstOccurrence(
   };
 }
 
+function replaceSelectionText(
+  text: string,
+  selection: SelectionRange,
+  insertedText: string,
+  selectInserted = false,
+): { text: string; selection: SelectionRange | CursorPos } {
+  const allLines = text.split('\n');
+  const startLine = allLines[selection.start.lineIndex] ?? '';
+  const endLine = allLines[selection.end.lineIndex] ?? '';
+  const before = startLine.slice(0, selection.start.charOffset);
+  const after = endLine.slice(selection.end.charOffset);
+  const insertedLines = insertedText.split('\n');
+
+  const replacementLines =
+    insertedLines.length === 1
+      ? [before + insertedLines[0] + after]
+      : [
+          before + insertedLines[0],
+          ...insertedLines.slice(1, -1),
+          insertedLines[insertedLines.length - 1] + after,
+        ];
+
+  allLines.splice(
+    selection.start.lineIndex,
+    selection.end.lineIndex - selection.start.lineIndex + 1,
+    ...replacementLines,
+  );
+
+  const lastLineIndex = selection.start.lineIndex + insertedLines.length - 1;
+  const lastLineOffset =
+    insertedLines.length === 1
+      ? before.length + insertedLines[0].length
+      : insertedLines[insertedLines.length - 1].length;
+
+  return {
+    text: allLines.join('\n'),
+    selection: selectInserted
+      ? {
+          start: {
+            lineIndex: selection.start.lineIndex,
+            charOffset: before.length,
+          },
+          end: {
+            lineIndex: lastLineIndex,
+            charOffset: lastLineOffset,
+          },
+          collapsed: false,
+        }
+      : {
+          lineIndex: lastLineIndex,
+          charOffset: lastLineOffset,
+        },
+  };
+}
+
 function adjustSelectionForReplacement(
   text: string,
   nextText: string,
@@ -535,6 +590,7 @@ export function MarkdownEditor({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageSizeCacheRef = useRef<Map<string, ImageSize>>(new Map());
   const tempObjectUrlsRef = useRef<Set<string>>(new Set());
+  const isComposingRef = useRef(false);
   const [stats, setStats] = useState<{ words: number; chars: number }>({
     words: 0,
     chars: 0,
@@ -850,6 +906,7 @@ export function MarkdownEditor({
   const handleInput = useCallback(() => {
     const el = editorRef.current;
     if (!el) return;
+    if (isComposingRef.current) return;
     const cursor = saveCursor(el);
     const text = getRawText(el);
     const trigger =
@@ -1096,42 +1153,14 @@ export function MarkdownEditor({
           end: getDocumentEndCursor(rawRef.current),
           collapsed: true,
         };
-      const lines = rawRef.current.split('\n');
-      const lineIdx = sel.start.lineIndex;
-      const line = lines[lineIdx] ?? '';
-      const pasted = text.split('\n');
+      const replacement = replaceSelectionText(
+        rawRef.current,
+        sel,
+        text,
+        selectInserted,
+      );
 
-      const beforeCursor = line.slice(0, sel.start.charOffset);
-      const afterCursor = line.slice(sel.end.charOffset);
-
-      const replacement =
-        pasted.length === 1
-          ? [beforeCursor + pasted[0] + afterCursor]
-          : [
-              beforeCursor + pasted[0],
-              ...pasted.slice(1, -1),
-              pasted[pasted.length - 1] + afterCursor,
-            ];
-
-      lines.splice(lineIdx, sel.end.lineIndex - lineIdx + 1, ...replacement);
-
-      const lastLineIdx = lineIdx + pasted.length - 1;
-      const lastLineLen =
-        pasted.length === 1 ? beforeCursor.length + pasted[0].length : pasted[pasted.length - 1].length;
-
-      const next: SelectionRange = selectInserted
-        ? {
-            start: { lineIndex: lineIdx, charOffset: beforeCursor.length },
-            end: { lineIndex: lastLineIdx, charOffset: lastLineLen },
-            collapsed: false,
-          }
-        : {
-            start: { lineIndex: lastLineIdx, charOffset: lastLineLen },
-            end: { lineIndex: lastLineIdx, charOffset: lastLineLen },
-            collapsed: true,
-          };
-
-      commit(lines.join('\n'), next);
+      commit(replacement.text, replacement.selection);
     },
     [commit],
   );
@@ -1419,10 +1448,16 @@ export function MarkdownEditor({
       // ── Enter ──────────────────────────────────────
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
-        const cursor = saveCursor(el);
-        if (!cursor) return;
-
-        const lines = rawRef.current.split('\n');
+        const sel = saveSelection(el);
+        if (!sel) return;
+        const replacement = sel.collapsed
+          ? {
+              text: rawRef.current,
+              selection: sel.start,
+            }
+          : replaceSelectionText(rawRef.current, sel, '');
+        const cursor = replacement.selection as CursorPos;
+        const lines = replacement.text.split('\n');
         const line = lines[cursor.lineIndex] ?? '';
         const before = line.slice(0, cursor.charOffset);
         const after = line.slice(cursor.charOffset);
@@ -1474,9 +1509,16 @@ export function MarkdownEditor({
       // ── Shift+Enter: soft line break (no list continuation) ──
       if (e.key === 'Enter' && e.shiftKey) {
         e.preventDefault();
-        const cursor = saveCursor(el);
-        if (!cursor) return;
-        const lines = rawRef.current.split('\n');
+        const sel = saveSelection(el);
+        if (!sel) return;
+        const replacement = sel.collapsed
+          ? {
+              text: rawRef.current,
+              selection: sel.start,
+            }
+          : replaceSelectionText(rawRef.current, sel, '');
+        const cursor = replacement.selection as CursorPos;
+        const lines = replacement.text.split('\n');
         const line = lines[cursor.lineIndex] ?? '';
         lines[cursor.lineIndex] = line.slice(0, cursor.charOffset);
         lines.splice(cursor.lineIndex + 1, 0, line.slice(cursor.charOffset));
@@ -1660,38 +1702,8 @@ export function MarkdownEditor({
       }
 
       // Default: plain-text paste replacing selection
-      const allLines = rawRef.current.split('\n');
-      const startLine = allLines[sel.start.lineIndex] ?? '';
-      const endLine = allLines[sel.end.lineIndex] ?? '';
-      const beforeCursor = startLine.slice(0, sel.start.charOffset);
-      const afterCursor = endLine.slice(sel.end.charOffset);
-      const pastedLines = pastedText.split('\n');
-
-      const replacementLines =
-        pastedLines.length === 1
-          ? [beforeCursor + pastedLines[0] + afterCursor]
-          : [
-              beforeCursor + pastedLines[0],
-              ...pastedLines.slice(1, -1),
-              pastedLines[pastedLines.length - 1] + afterCursor,
-            ];
-
-      allLines.splice(
-        sel.start.lineIndex,
-        sel.end.lineIndex - sel.start.lineIndex + 1,
-        ...replacementLines,
-      );
-
-      const newLineIndex = sel.start.lineIndex + pastedLines.length - 1;
-      const newCharOffset =
-        pastedLines.length === 1
-          ? beforeCursor.length + pastedLines[0].length
-          : pastedLines[pastedLines.length - 1].length;
-
-      commit(allLines.join('\n'), {
-        lineIndex: newLineIndex,
-        charOffset: newCharOffset,
-      });
+      const replacement = replaceSelectionText(rawRef.current, sel, pastedText);
+      commit(replacement.text, replacement.selection);
     },
     [commit],
   );
@@ -2214,6 +2226,12 @@ export function MarkdownEditor({
           suppressContentEditableWarning
           onMouseDownCapture={handleContentMouseDownCapture}
           onInput={handleInput}
+          onCompositionStart={() => {
+            isComposingRef.current = true;
+          }}
+          onCompositionEnd={() => {
+            isComposingRef.current = false;
+          }}
           onKeyDown={handleKeyDown}
           onPaste={handlePaste}
           onClick={handleClick}

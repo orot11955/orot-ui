@@ -21,7 +21,11 @@
     "./themes/forest.css": "./src/themes/forest.css"
   },
   "files": [
-    "dist",
+    "dist/index.js",
+    "dist/index.mjs",
+    "dist/index.d.ts",
+    "dist/index.d.mts",
+    "dist/index.css",
     "src/styles",
     "src/themes"
   ],

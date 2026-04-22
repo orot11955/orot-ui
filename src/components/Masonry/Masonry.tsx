@@ -1,4 +1,4 @@
-import { Children, useEffect, useRef, useState } from 'react';
+import { Children, isValidElement, useEffect, useMemo, useRef, useState } from 'react';
 import './Masonry.css';
 import type { MasonryProps } from './Masonry.types';
 
@@ -23,23 +23,97 @@ export function Masonry({
   style,
 }: MasonryProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const itemRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const items = Children.toArray(children);
   const [colCount, setColCount] = useState(() =>
     typeof columns === 'number' ? columns : 3,
   );
+  const [containerWidth, setContainerWidth] = useState(0);
+  const [itemHeights, setItemHeights] = useState<Array<number | null>>([]);
 
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
-    const update = () => setColCount(resolveColumns(columns, el.offsetWidth));
+    const update = () => {
+      const width = el.offsetWidth;
+      setContainerWidth(width);
+      setColCount(resolveColumns(columns, width));
+    };
     update();
     const ro = new ResizeObserver(update);
     ro.observe(el);
     return () => ro.disconnect();
   }, [columns]);
 
-  const items = Children.toArray(children);
-  const cols: React.ReactNode[][] = Array.from({ length: colCount }, () => []);
-  items.forEach((child, i) => cols[i % colCount].push(child));
+  useEffect(() => {
+    setItemHeights((prev) => items.map((_, index) => prev[index] ?? null));
+    itemRefs.current = itemRefs.current.slice(0, items.length);
+  }, [items.length]);
+
+  useEffect(() => {
+    if (items.length === 0) return;
+
+    const ro = new ResizeObserver((entries) => {
+      setItemHeights((prev) => {
+        const next = items.map((_, index) => prev[index] ?? null);
+        let changed = false;
+
+        for (const entry of entries) {
+          const index = Number((entry.target as HTMLDivElement).dataset.index);
+          if (!Number.isFinite(index)) continue;
+
+          const height = Math.ceil(entry.contentRect.height);
+          if (next[index] !== height) {
+            next[index] = height;
+            changed = true;
+          }
+        }
+
+        return changed ? next : prev;
+      });
+    });
+
+    itemRefs.current.forEach((node, index) => {
+      if (!node) return;
+      node.dataset.index = String(index);
+      ro.observe(node);
+    });
+
+    return () => ro.disconnect();
+  }, [items.length, colCount, containerWidth]);
+
+  const columnWidth = colCount > 0
+    ? Math.max((containerWidth - gap * (colCount - 1)) / colCount, 0)
+    : 0;
+
+  const { positions, height } = useMemo(() => {
+    const columnHeights = Array.from({ length: Math.max(colCount, 1) }, () => 0);
+
+    const nextPositions = items.map((_, index) => {
+      const columnIndex = columnHeights.reduce((shortest, current, currentIndex, all) => (
+        current < all[shortest] ? currentIndex : shortest
+      ), 0);
+
+      const top = columnHeights[columnIndex];
+      const left = columnIndex * (columnWidth + gap);
+      const itemHeight = itemHeights[index] ?? 0;
+
+      columnHeights[columnIndex] += itemHeight + gap;
+
+      return { top, left };
+    });
+
+    const nextHeight = items.length > 0
+      ? Math.max(...columnHeights) - gap
+      : 0;
+
+    return {
+      positions: nextPositions,
+      height: Math.max(nextHeight, 0),
+    };
+  }, [colCount, columnWidth, gap, itemHeights, items]);
+
+  const isReady = columnWidth > 0 && items.every((_, index) => itemHeights[index] != null);
 
   const cls = ['orot-masonry', className].filter(Boolean).join(' ');
 
@@ -47,17 +121,32 @@ export function Masonry({
     <div
       ref={containerRef}
       className={cls}
-      style={{ '--orot-masonry-gap': `${gap}px`, ...style } as React.CSSProperties}
+      style={{
+        '--orot-masonry-gap': `${gap}px`,
+        '--orot-masonry-height': `${height}px`,
+        ...style,
+      } as React.CSSProperties}
     >
-      {cols.map((col, ci) => (
-        <div key={ci} className="orot-masonry__col">
-          {col.map((item, ii) => (
-            <div key={ii} className="orot-masonry__item">
-              {item}
-            </div>
-          ))}
-        </div>
-      ))}
+      {items.map((item, index) => {
+        const key = isValidElement(item) && item.key != null ? item.key : index;
+        const position = positions[index] ?? { top: 0, left: 0 };
+
+        return (
+          <div
+            key={key}
+            ref={(node) => {
+              itemRefs.current[index] = node;
+            }}
+            className={`orot-masonry__item${isReady ? '' : ' orot-masonry__item--hidden'}`}
+            style={{
+              width: `${columnWidth}px`,
+              transform: `translate(${position.left}px, ${position.top}px)`,
+            }}
+          >
+            {item}
+          </div>
+        );
+      })}
     </div>
   );
 }
